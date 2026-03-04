@@ -2,10 +2,11 @@
 import axios from "axios";
 
 export const api = axios.create({
-  baseURL: "https://aarogya-first-api.vercel.app/api",
+  baseURL: "https://aarogya-first-api.vercel.app",
   headers: {
     "Content-Type": "application/json",
   },
+    
 });
 
 api.interceptors.request.use((config) => {
