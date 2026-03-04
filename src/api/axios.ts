@@ -2,7 +2,7 @@
 import axios from "axios";
 
 export const api = axios.create({
-  baseURL: "/api",
+  baseURL: "https://aarogya-first-api.vercel.app",
   headers: {
     "Content-Type": "application/json",
   },

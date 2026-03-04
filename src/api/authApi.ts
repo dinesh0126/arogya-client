@@ -32,7 +32,7 @@ export interface DashboardSummary {
 export const loginApi = async (
   payload: LoginPayload
 ): Promise<LoginResponse> => {
-  const res = await api.post("/auth/login", payload);
+  const res = await api.post("/login", payload);
   return res.data;
 };
 
