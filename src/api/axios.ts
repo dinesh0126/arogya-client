@@ -2,7 +2,7 @@
 import axios from "axios";
 
 export const api = axios.create({
-  baseURL: "https://aarogya-first-api.vercel.app/api",
+  baseURL: "https://aarogya-first-api.onrender.com/api",
  
 });
 
