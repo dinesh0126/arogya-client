@@ -162,7 +162,7 @@ export function LoginForm({
              Arogya Admin Command Center
             </p>
             <p className="text-base font-medium text-slate-300">
-               Arogya Admin Command Center
+               Powerful tools to manage doctors, patients, appointments, and platform operations in one secure place.
             </p>
           </div>
 
