@@ -4,9 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
+import { HeartPulse } from "lucide-react";
+import { useToast } from "@/components/ui/toast";
 
 const Signup = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   const [step, setStep] = useState<"change password" | "otp">("change password");
   const [formData, setFormData] = useState({
@@ -26,31 +29,55 @@ const Signup = () => {
   // send OTP
   const handleSendOtp = () => {
     if (!formData.phone && !formData.email) {
-      alert("Please enter your phone or email first.");
+      toast({
+        title: "OTP send failed",
+        description: "Please enter your phone or email first.",
+        variant: "error",
+      });
       return;
     }
 
     // simulate OTP send
     const randomOtp = Math.floor(100000 + Math.random() * 900000).toString();
     setGeneratedOtp(randomOtp);
-    alert(`OTP sent successfully! (for demo: ${randomOtp})`);
+    toast({
+      title: "OTP sent",
+      description: `Demo OTP: ${randomOtp}`,
+      variant: "success",
+    });
     setStep("otp");
   };
 
   // verify OTP
   const handleVerifyOtp = () => {
     if (otp === generatedOtp) {
-      alert("OTP verified successfully! Signup completed.");
+      toast({
+        title: "OTP verified",
+        description: "Password reset flow completed successfully.",
+        variant: "success",
+      });
       navigate("/login");
     } else {
-      alert("Invalid OTP. Please try again.");
+      toast({
+        title: "Invalid OTP",
+        description: "Please try again.",
+        variant: "error",
+      });
     }
   };
 
   return (
-    <div className="flex w-full items-center justify-center h-screen bg-gray-50">
-      <Card className="md:w-100 w-[96%] m-4  max-h-screen shadow-md">
+    <div className="flex min-h-screen w-full items-center justify-center bg-[linear-gradient(135deg,#e6f6ff_0%,#f7fcff_45%,#d9fff2_100%)] px-4">
+      <Card className="w-full max-w-md border-white/80 bg-white/90 shadow-2xl backdrop-blur">
         <CardHeader>
+          <div className="mb-4 flex items-center justify-center">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-cyan-500/10 text-cyan-700">
+              <HeartPulse className="h-6 w-6" />
+            </div>
+          </div>
+          <p className="text-center text-xs uppercase tracking-[0.3em] text-cyan-700">
+            Arogya Healthcare
+          </p>
           <CardTitle className="text-center text-2xl font-semibold">
             {step === "change password" ? "Change Password" : "Verify OTP "}
           </CardTitle>
@@ -91,7 +118,7 @@ const Signup = () => {
                 className="font-normal"
               />
             </Field>
-            <Button onClick={handleSendOtp} className="cursor-pointer">
+            <Button onClick={handleSendOtp} className="bg-cyan-600 hover:bg-cyan-700">
               Send OTP
             </Button>
 {/* 
@@ -131,7 +158,9 @@ const Signup = () => {
             />
 
             <p className="font-light text-[12px] ">An OTP has been sent to your email/phone.</p>
-            <Button onClick={handleVerifyOtp}>Verify OTP</Button>
+            <Button onClick={handleVerifyOtp} className="bg-cyan-600 hover:bg-cyan-700">
+              Verify OTP
+            </Button>
             <Button variant="outline" type="button" onClick={handleSendOtp}>
               Resend OTP
             </Button>

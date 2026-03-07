@@ -17,8 +17,17 @@ import {
 import { Input } from "@/components/ui/input";
 import { Link, useNavigate } from "react-router-dom";
 import React, { useEffect, useState } from "react";
-import { Eye, EyeClosedIcon } from "lucide-react";
+import {
+  Activity,
+  Eye,
+  EyeClosedIcon,
+  HeartPulse,
+  ShieldCheck,
+  Stethoscope,
+} from "lucide-react";
 import { useLogin } from "@/hooks/useLogin";
+import { useToast } from "@/components/ui/toast";
+import { getErrorMessage } from "@/lib/errors";
 
 const extractToken = (data: any): string => {
   return (
@@ -52,6 +61,7 @@ export function LoginForm({
 
   const navigate = useNavigate();
   const { mutate, isPending } = useLogin();
+  const { toast } = useToast();
 
   const validate = () => {
     const newErrors: typeof errors = {};
@@ -83,7 +93,10 @@ export function LoginForm({
           const resolvedToken = extractToken(data);
 
           if (!resolvedToken) {
-            setLoginError("Login response me token nahi mila. Backend token field check karo.");
+            const text =
+              "Login response me token nahi mila. Backend token field check karo.";
+            setLoginError(text);
+            toast({ title: "Login failed", description: text, variant: "error" });
             return;
           }
 
@@ -96,12 +109,17 @@ export function LoginForm({
               user: data?.user || data?.data?.user || null,
             })
           );
+          toast({
+            title: "Welcome to Arogya Healthcare",
+            description: "Admin session started successfully.",
+            variant: "success",
+          });
           navigate("/", { replace: true });
         },
         onError: (err: any) => {
-          setLoginError(
-            err?.response?.data?.message || "Invalid email or password"
-          );
+          const text = getErrorMessage(err, "Invalid email or password");
+          setLoginError(text);
+          toast({ title: "Login failed", description: text, variant: "error" });
         },
       }
     );
@@ -112,139 +130,195 @@ export function LoginForm({
     if (auth?.isAuth && auth?.token) {
       navigate("/", { replace: true });
     }
-  }, []);
+  }, [navigate]);
 
   return (
     <div
       className={cn(
-        "flex w-full md:mt-10 dark:bg-black items-center justify-center flex-col gap-6",
+        "relative min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(14,165,233,0.18),_transparent_28%),radial-gradient(circle_at_80%_20%,_rgba(16,185,129,0.16),_transparent_24%),linear-gradient(135deg,#06131a_0%,#0b2230_48%,#f4fbff_48%,#f8fdff_100%)] px-4 py-8 text-slate-900 md:px-8 md:py-10 dark:text-white",
         className
       )}
       {...props}
     >
-      <Card className="md:w-100 w-[96%] m-4">
-        <CardHeader className="text-center">
-          <CardTitle className="text-xl">Welcome back</CardTitle>
-          <CardDescription>
-            Login with your Apple or Google account
-          </CardDescription>
-        </CardHeader>
+      <div className="absolute left-6 top-10 h-36 w-36 rounded-full bg-cyan-400/15 blur-3xl" />
+      <div className="absolute bottom-0 right-0 h-56 w-56 rounded-full bg-emerald-400/15 blur-3xl" />
 
-        <CardContent>
-          <form onSubmit={handleLogin}>
-            <FieldGroup>
-              <Field>
-                <Button variant="outline" type="button">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                    <path
-                      d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"
-                      fill="currentColor"
-                    />
-                  </svg>
-                  Login with Google
-                </Button>
-              </Field>
+      <div className="relative mx-auto grid w-full max-w-6xl gap-6 lg:grid-cols-[1.15fr_0.85fr]">
+        <div className="hidden overflow-hidden rounded-[2rem] border border-white/10 bg-slate-950/85 p-8 text-white shadow-2xl lg:block">
+          <div className="flex items-center gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-cyan-400/15 ring-1 ring-cyan-300/20">
+              <HeartPulse className="h-6 w-6 text-cyan-300" />
+            </div>
+            <div>
+              <p className="text-xs uppercase tracking-[0.35em] text-cyan-200/80">
+                Arogya Healthcare
+              </p>
+              <h1 className="text-3xl font-semibold">Doctor Platform Admin</h1>
+            </div>
+          </div>
 
-              <FieldSeparator className="font-normal">
-                Or continue with
-              </FieldSeparator>
+          <div className="mt-12 max-w-xl space-y-5">
+            <p className="text-5xl font-semibold leading-tight">
+              Manage doctors, patients, appointments, and plans from one clinical command center.
+            </p>
+            <p className="text-base font-medium text-slate-300">
+              Secure workflows, real-time admin actions, and cleaner healthcare operations for your platform team.
+            </p>
+          </div>
 
-              <Field className="gap-2">
-                <FieldLabel
-                  htmlFor="email"
-                  className={errors.email ? "text-red-500" : ""}
-                >
-                  Email*
-                </FieldLabel>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="m@example.com"
-                  value={email}
-                  onChange={(e) => {
-                    setEmail(e.target.value);
-                    setErrors((p) => ({ ...p, email: "" }));
-                    setLoginError("");
-                  }}
-                  className={
-                    errors.email
-                      ? "border-red-500 focus-visible:ring-red-500"
-                      : ""
-                  }
-                />
-                {errors.email && (
-                  <p className="text-xs text-red-500">{errors.email}</p>
-                )}
-              </Field>
+          <div className="mt-12 grid gap-4 md:grid-cols-3">
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+              <Stethoscope className="mb-3 h-5 w-5 text-cyan-300" />
+              <p className="text-sm font-semibold">Doctor onboarding</p>
+              <p className="mt-1 text-xs font-medium text-slate-300">
+                Create doctor accounts and drive KYC approvals faster.
+              </p>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+              <Activity className="mb-3 h-5 w-5 text-emerald-300" />
+              <p className="text-sm font-semibold">Live operations</p>
+              <p className="mt-1 text-xs font-medium text-slate-300">
+                Track appointments, plans, and patient updates in one place.
+              </p>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+              <ShieldCheck className="mb-3 h-5 w-5 text-sky-300" />
+              <p className="text-sm font-semibold">Secure access</p>
+              <p className="mt-1 text-xs font-medium text-slate-300">
+                Admin-only entry with protected healthcare data controls.
+              </p>
+            </div>
+          </div>
+        </div>
 
-              <Field className="gap-2">
-                <div className="flex items-center">
+        <Card className="border-white/70 bg-white/88 shadow-2xl backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/85">
+          <CardHeader className="space-y-3 pb-2">
+            <div className="flex items-center gap-3 lg:hidden">
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-cyan-500/10 text-cyan-700 dark:text-cyan-300">
+                <HeartPulse className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-xs uppercase tracking-[0.3em] text-cyan-700 dark:text-cyan-300">
+                  Arogya Healthcare
+                </p>
+                <p className="text-sm font-semibold">Doctor Platform Admin</p>
+              </div>
+            </div>
+            <CardTitle className="text-2xl">Welcome back</CardTitle>
+            <CardDescription className="text-sm leading-6">
+              Sign in to manage doctors, patients, appointments, and plan operations.
+            </CardDescription>
+          </CardHeader>
+
+          <CardContent>
+            <form onSubmit={handleLogin}>
+              <FieldGroup className="gap-5">
+                <FieldSeparator className="font-normal text-slate-500">
+                  Secure admin login
+                </FieldSeparator>
+
+                <Field className="gap-2">
                   <FieldLabel
-                    htmlFor="password"
-                    className={errors.password ? "text-red-500" : ""}
+                    htmlFor="email"
+                    className={errors.email ? "text-red-500" : ""}
                   >
-                    Password*
+                    Admin Email
                   </FieldLabel>
-                  <Link
-                    to="/forgot-password"
-                    className="ml-auto text-sm hover:underline"
-                  >
-                    Forgot your password?
-                  </Link>
-                </div>
-
-                <div className="relative">
                   <Input
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    value={password}
-                    placeholder="••••••••"
+                    id="email"
+                    type="email"
+                    placeholder="admin@arogyahealthcare.com"
+                    value={email}
                     onChange={(e) => {
-                      setPassword(e.target.value);
-                      setErrors((p) => ({ ...p, password: "" }));
+                      setEmail(e.target.value);
+                      setErrors((p) => ({ ...p, email: "" }));
                       setLoginError("");
                     }}
-                    className={`pr-10 ${
-                      errors.password
-                        ? "border-red-500 focus-visible:ring-red-500"
-                        : ""
-                    }`}
+                    className={cn(
+                      "h-11 rounded-xl border-slate-200 bg-white/80 dark:border-slate-800 dark:bg-slate-900/60",
+                      errors.email ? "border-red-500 focus-visible:ring-red-500" : ""
+                    )}
                   />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2"
-                  >
-                    {showPassword ? <EyeClosedIcon /> : <Eye />}
-                  </button>
-                </div>
+                  {errors.email && (
+                    <p className="text-xs text-red-500">{errors.email}</p>
+                  )}
+                </Field>
 
-                {errors.password && (
-                  <p className="text-xs text-red-500">{errors.password}</p>
+                <Field className="gap-2">
+                  <div className="flex items-center">
+                    <FieldLabel
+                      htmlFor="password"
+                      className={errors.password ? "text-red-500" : ""}
+                    >
+                      Password
+                    </FieldLabel>
+                    <Link
+                      to="/forgot-password"
+                      className="ml-auto text-sm font-medium text-cyan-700 hover:underline dark:text-cyan-300"
+                    >
+                      Reset access
+                    </Link>
+                  </div>
+
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      value={password}
+                      placeholder="Enter your secure password"
+                      onChange={(e) => {
+                        setPassword(e.target.value);
+                        setErrors((p) => ({ ...p, password: "" }));
+                        setLoginError("");
+                      }}
+                      className={cn(
+                        "h-11 rounded-xl border-slate-200 bg-white/80 pr-10 dark:border-slate-800 dark:bg-slate-900/60",
+                        errors.password ? "border-red-500 focus-visible:ring-red-500" : ""
+                      )}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500"
+                    >
+                      {showPassword ? (
+                        <EyeClosedIcon className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
+                    </button>
+                  </div>
+
+                  {errors.password && (
+                    <p className="text-xs text-red-500">{errors.password}</p>
+                  )}
+                </Field>
+
+                {loginError && (
+                  <p className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-600 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-300">
+                    {loginError}
+                  </p>
                 )}
-              </Field>
 
-              {loginError && (
-                <p className="text-sm text-red-500 text-center">
-                  {loginError}
-                </p>
-              )}
+                <Field>
+                  <Button
+                    type="submit"
+                    disabled={isPending}
+                    className="h-11 w-full rounded-xl bg-cyan-600 text-white hover:bg-cyan-700"
+                  >
+                    {isPending ? "Logging in..." : "Login to Dashboard"}
+                  </Button>
+                </Field>
 
-              <Field>
-                <Button type="submit" disabled={isPending}>
-                  {isPending ? "Logging in..." : "Login"}
-                </Button>
-              </Field>
-            </FieldGroup>
-          </form>
-        </CardContent>
-      </Card>
-
-      <FieldDescription className="px-6 text-center">
-        By clicking continue, you agree to our{" "}
-        <a href="#">Terms of Service</a> and{" "}
-        <a href="#">Privacy Policy</a>.
-      </FieldDescription>
+                <FieldDescription className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-left text-sm leading-6 dark:border-slate-800 dark:bg-slate-900/60">
+                  Your admin access controls the Arogya Healthcare doctor platform.
+                  Keep credentials restricted to authorized operations staff only.
+                </FieldDescription>
+              </FieldGroup>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
