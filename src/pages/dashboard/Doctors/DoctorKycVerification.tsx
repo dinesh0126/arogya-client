@@ -11,6 +11,8 @@ import {
   usePendingDoctorKyc,
   useRejectDoctorKyc,
 } from "@/hooks/useDoctor";
+import { useToast } from "@/components/ui/toast";
+import { getErrorMessage } from "@/lib/errors";
 
 interface KycDoctorRecord {
   id: number;
@@ -89,6 +91,7 @@ export default function DoctorKycVerification() {
   const { data, isLoading } = usePendingDoctorKyc();
   const { mutate: approveDoctor, isPending: approving } = useApproveDoctorKyc();
   const { mutate: rejectDoctor, isPending: rejecting } = useRejectDoctorKyc();
+  const { toast } = useToast();
 
   const doctors = useMemo(() => {
     const rows = extractPendingDoctors(data);
@@ -139,21 +142,55 @@ export default function DoctorKycVerification() {
       header: "Actions",
       render: (doctor) => (
         <div className="flex gap-2">
-          <Button
-            size="sm"
-            className="bg-green-600 hover:bg-green-700"
-            disabled={approving || rejecting}
-            onClick={() => approveDoctor(doctor.id)}
-          >
+            <Button
+              size="sm"
+              className="bg-green-600 hover:bg-green-700"
+              disabled={approving || rejecting}
+              onClick={() =>
+                approveDoctor(doctor.id, {
+                  onSuccess: () => {
+                    toast({
+                      title: "Doctor approved",
+                      description: `${doctor.name} KYC approved successfully.`,
+                      variant: "success",
+                    });
+                  },
+                  onError: (error) => {
+                    toast({
+                      title: "Approve failed",
+                      description: getErrorMessage(error, "Could not approve doctor."),
+                      variant: "error",
+                    });
+                  },
+                })
+              }
+            >
             <UserCheck className="h-4 w-4 mr-1" />
             Accept
           </Button>
-          <Button
-            size="sm"
-            variant="destructive"
-            disabled={approving || rejecting}
-            onClick={() => rejectDoctor(doctor.id)}
-          >
+            <Button
+              size="sm"
+              variant="destructive"
+              disabled={approving || rejecting}
+              onClick={() =>
+                rejectDoctor(doctor.id, {
+                  onSuccess: () => {
+                    toast({
+                      title: "Doctor rejected",
+                      description: `${doctor.name} KYC has been rejected.`,
+                      variant: "info",
+                    });
+                  },
+                  onError: (error) => {
+                    toast({
+                      title: "Reject failed",
+                      description: getErrorMessage(error, "Could not reject doctor."),
+                      variant: "error",
+                    });
+                  },
+                })
+              }
+            >
             <UserX className="h-4 w-4 mr-1" />
             Deactivate
           </Button>
@@ -194,7 +231,24 @@ export default function DoctorKycVerification() {
                 size="sm"
                 className="bg-green-600 hover:bg-green-700"
                 disabled={approving || rejecting}
-                onClick={() => approveDoctor(doctor.id)}
+                onClick={() =>
+                  approveDoctor(doctor.id, {
+                    onSuccess: () => {
+                      toast({
+                        title: "Doctor approved",
+                        description: `${doctor.name} KYC approved successfully.`,
+                        variant: "success",
+                      });
+                    },
+                    onError: (error) => {
+                      toast({
+                        title: "Approve failed",
+                        description: getErrorMessage(error, "Could not approve doctor."),
+                        variant: "error",
+                      });
+                    },
+                  })
+                }
               >
                 Accept
               </Button>
@@ -202,7 +256,24 @@ export default function DoctorKycVerification() {
                 size="sm"
                 variant="destructive"
                 disabled={approving || rejecting}
-                onClick={() => rejectDoctor(doctor.id)}
+                onClick={() =>
+                  rejectDoctor(doctor.id, {
+                    onSuccess: () => {
+                      toast({
+                        title: "Doctor rejected",
+                        description: `${doctor.name} KYC has been rejected.`,
+                        variant: "info",
+                      });
+                    },
+                    onError: (error) => {
+                      toast({
+                        title: "Reject failed",
+                        description: getErrorMessage(error, "Could not reject doctor."),
+                        variant: "error",
+                      });
+                    },
+                  })
+                }
               >
                 Deactivate
               </Button>

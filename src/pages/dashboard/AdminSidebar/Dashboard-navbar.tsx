@@ -17,10 +17,12 @@ import {
 } from "../DashboardPages/Notification";
 import type { NotificationItem } from "../DashboardPages/Notification";
 import { useNavigate } from "react-router-dom";
+import { useToast } from "@/components/ui/toast";
 
 const DashboardNavbar = () => {
 
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   const [notifications, setNotifications] =
     useState<NotificationItem[]>(notificationSeed);
@@ -41,6 +43,11 @@ const DashboardNavbar = () => {
 
   const logOut= () => {
     localStorage.removeItem("auth");
+    toast({
+      title: "Logged out",
+      description: "You have been signed out of Arogya Healthcare.",
+      variant: "info",
+    });
     navigate("/login");
   }
 

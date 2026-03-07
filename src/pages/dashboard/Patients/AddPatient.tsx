@@ -13,6 +13,8 @@ import type {
   CreatePatientProfilePayload,
   UpdatePatientProfilePayload,
 } from "@/types/patient";
+import { useToast } from "@/components/ui/toast";
+import { getErrorMessage } from "@/lib/errors";
 
 const getDefaultAvatar = (name: string) =>
   `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(
@@ -74,6 +76,7 @@ const toNumber = (value: string) => Number(value || 0);
 export default function AddPatient() {
   const location = useLocation();
   const profileUserIdRef = useRef<HTMLInputElement | null>(null);
+  const { toast } = useToast();
   const { mutate: createUser, isPending: isCreatingUser } = useCreatePatientUser();
   const { mutate: createProfile, isPending: isCreatingProfile } =
     useCreatePatientProfile();
@@ -182,16 +185,21 @@ export default function AddPatient() {
         onSuccess: (data) => {
           const createdUserId = extractUserId(data);
           if (!createdUserId) {
-            setMessage("User created but userId not found in response.");
+            const text = "Patient created but userId not found in response.";
+            setMessage(text);
+            toast({ title: "Patient create issue", description: text, variant: "error" });
             return;
           }
 
           setUserId(createdUserId);
-          setMessage(`Patient user created successfully. userId: ${createdUserId}`);
+          const text = `Patient created successfully. userId: ${createdUserId}`;
+          setMessage(text);
+          toast({ title: "Patient created", description: text, variant: "success" });
         },
         onError: (error: unknown) => {
-          const apiError = error as { response?: { data?: { message?: string } } };
-          setMessage(apiError?.response?.data?.message || "User create failed");
+          const text = getErrorMessage(error, "Patient create failed");
+          setMessage(text);
+          toast({ title: "Patient create failed", description: text, variant: "error" });
         },
       }
     );
@@ -200,7 +208,9 @@ export default function AddPatient() {
   const handleCreateProfile = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!userId) {
-      setMessage("First create user with role patient, then create profile.");
+      const text = "First create patient, then create profile.";
+      setMessage(text);
+      toast({ title: "Patient profile blocked", description: text, variant: "error" });
       return;
     }
 
@@ -217,15 +227,16 @@ export default function AddPatient() {
           if (createdProfileId) {
             setProfileId(createdProfileId);
           }
-          setMessage(
-            `Patient profile created successfully for userId: ${userId}${
-              createdProfileId ? ` (profileId: ${createdProfileId})` : ""
-            }`
-          );
+          const text = `Patient profile created successfully for userId: ${userId}${
+            createdProfileId ? ` (profileId: ${createdProfileId})` : ""
+          }`;
+          setMessage(text);
+          toast({ title: "Patient profile created", description: text, variant: "success" });
         },
         onError: (error: unknown) => {
-          const apiError = error as { response?: { data?: { message?: string } } };
-          setMessage(apiError?.response?.data?.message || "Profile create failed");
+          const text = getErrorMessage(error, "Profile create failed");
+          setMessage(text);
+          toast({ title: "Patient profile failed", description: text, variant: "error" });
         },
       }
     );
@@ -234,7 +245,9 @@ export default function AddPatient() {
   const handleUpdateProfile = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!profileId) {
-      setMessage("Profile ID is required to update patient profile.");
+      const text = "Profile ID is required to update patient profile.";
+      setMessage(text);
+      toast({ title: "Patient update blocked", description: text, variant: "error" });
       return;
     }
 
@@ -247,11 +260,14 @@ export default function AddPatient() {
       },
       {
         onSuccess: () => {
-          setMessage(`Patient profile updated successfully. profileId: ${profileId}`);
+          const text = `Patient profile updated successfully. profileId: ${profileId}`;
+          setMessage(text);
+          toast({ title: "Patient profile updated", description: text, variant: "success" });
         },
         onError: (error: unknown) => {
-          const apiError = error as { response?: { data?: { message?: string } } };
-          setMessage(apiError?.response?.data?.message || "Profile update failed");
+          const text = getErrorMessage(error, "Profile update failed");
+          setMessage(text);
+          toast({ title: "Patient update failed", description: text, variant: "error" });
         },
       }
     );

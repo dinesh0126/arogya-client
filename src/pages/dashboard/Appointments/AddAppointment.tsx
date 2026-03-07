@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useCreateAppointment } from "@/hooks/useAppointment";
+import { useToast } from "@/components/ui/toast";
+import { getErrorMessage } from "@/lib/errors";
 
 const appointmentTypes = [
   "teleconsultation",
@@ -23,6 +25,7 @@ const detectTimezone = () => Intl.DateTimeFormat().resolvedOptions().timeZone;
 
 export default function AddAppointment() {
   const { mutate: createAppointment, isPending } = useCreateAppointment();
+  const { toast } = useToast();
 
   const [formData, setFormData] = useState({
     doctor_id: "",
@@ -63,27 +66,39 @@ export default function AddAppointment() {
     };
 
     if (!payload.doctor_id || !payload.patient_id) {
-      setMessage("doctor_id and patient_id are required.");
+      const text = "doctor_id and patient_id are required.";
+      setMessage(text);
+      toast({ title: "Appointment create failed", description: text, variant: "error" });
       return;
     }
 
     if (!payload.start_utc) {
-      setMessage("Valid appointment date and time is required.");
+      const text = "Valid appointment date and time is required.";
+      setMessage(text);
+      toast({ title: "Appointment create failed", description: text, variant: "error" });
       return;
     }
 
     if (!payload.duration || payload.duration <= 0) {
-      setMessage("Duration must be greater than 0.");
+      const text = "Duration must be greater than 0.";
+      setMessage(text);
+      toast({ title: "Appointment create failed", description: text, variant: "error" });
       return;
     }
 
     createAppointment(payload, {
       onSuccess: () => {
         setMessage("Appointment created successfully.");
+        toast({
+          title: "Appointment created",
+          description: "New appointment has been added successfully.",
+          variant: "success",
+        });
       },
       onError: (error: unknown) => {
-        const apiError = error as { response?: { data?: { message?: string } } };
-        setMessage(apiError?.response?.data?.message || "Failed to create appointment.");
+        const text = getErrorMessage(error, "Failed to create appointment.");
+        setMessage(text);
+        toast({ title: "Appointment create failed", description: text, variant: "error" });
       },
     });
   };

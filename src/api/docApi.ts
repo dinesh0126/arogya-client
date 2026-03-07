@@ -23,7 +23,7 @@ export const createDoctorUserApi = async (
   const userPayload = { ...payload };
   const res = await api.post("/admin/createuser", {
     ...userPayload,
-    role: payload.role,
+    role: "doctor",
   });
   return res.data;
 };

@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useCreateDoctorProfile, useCreateDoctorUser } from "@/hooks/useDoctor";
+import { useToast } from "@/components/ui/toast";
+import { getErrorMessage } from "@/lib/errors";
 
 const parseCommaList = (value: string) =>
   value
@@ -31,6 +33,7 @@ const extractUserId = (data: any): number =>
 export default function AddDoctor() {
   const { mutate: createUser, isPending: isCreatingUser } = useCreateDoctorUser();
   const { mutate: createProfile, isPending: isCreatingProfile } = useCreateDoctorProfile();
+  const { toast } = useToast();
 
   const [userId, setUserId] = useState<number | null>(null);
   const [message, setMessage] = useState("");
@@ -93,18 +96,20 @@ export default function AddDoctor() {
         onSuccess: (data) => {
           const createdUserId = extractUserId(data);
           if (!createdUserId) {
-            setMessage("User created response me userId nahi mila.");
+            const text = "Doctor created but userId response me nahi mila.";
+            setMessage(text);
+            toast({ title: "Doctor create issue", description: text, variant: "error" });
             return;
           }
           setUserId(createdUserId);
-          setMessage(`User created successfully. userId: ${createdUserId}`);
+          const text = `Doctor created successfully. userId: ${createdUserId}`;
+          setMessage(text);
+          toast({ title: "Doctor created", description: text, variant: "success" });
         },
         onError: (error: any) => {
-          setMessage(
-            error?.response?.data?.message ||
-              error?.message ||
-              "User create failed"
-          );
+          const text = getErrorMessage(error, "Doctor create failed");
+          setMessage(text);
+          toast({ title: "Doctor create failed", description: text, variant: "error" });
         },
       }
     );
@@ -113,7 +118,9 @@ export default function AddDoctor() {
   const handleCreateProfile = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!userId) {
-      setMessage("Pehle user create karo, then profile create hogi.");
+      const text = "Pehle doctor create karo, then profile create hogi.";
+      setMessage(text);
+      toast({ title: "Doctor profile blocked", description: text, variant: "error" });
       return;
     }
 
@@ -145,14 +152,14 @@ export default function AddDoctor() {
       },
       {
         onSuccess: () => {
-          setMessage(`Doctor profile created successfully for userId: ${userId}`);
+          const text = `Doctor profile created successfully for userId: ${userId}`;
+          setMessage(text);
+          toast({ title: "Doctor profile created", description: text, variant: "success" });
         },
         onError: (error: any) => {
-          setMessage(
-            error?.response?.data?.message ||
-              error?.message ||
-              "Doctor profile create failed"
-          );
+          const text = getErrorMessage(error, "Doctor profile create failed");
+          setMessage(text);
+          toast({ title: "Doctor profile failed", description: text, variant: "error" });
         },
       }
     );

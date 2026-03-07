@@ -9,6 +9,8 @@ import { Label } from "@/components/ui/label";
 import { RecordsOverview, type RecordColumn } from "@/components/dashboard/RecordsOverview";
 import { useActivatePlan, useDeactivatePlan, usePlans, useUpdatePlan } from "@/hooks/usePlan";
 import type { Plan, UpdatePlanPayload } from "@/types/plan";
+import { useToast } from "@/components/ui/toast";
+import { getErrorMessage } from "@/lib/errors";
 
 const formatPrice = (price: string | number) => {
   const value = Number(price);
@@ -30,6 +32,7 @@ const getUpdatePayloadFromPlan = (plan: Plan): UpdatePlanPayload => ({
 
 export default function AllPlans() {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const { data, isLoading, isError } = usePlans();
   const { mutate: updatePlan, isPending: isUpdatingPlan } = useUpdatePlan();
   const { mutate: deactivatePlan, isPending: isDeactivatingPlan } = useDeactivatePlan();
@@ -68,7 +71,19 @@ export default function AllPlans() {
       { id: editingPlanId, payload: editingForm },
       {
         onSuccess: () => {
+          toast({
+            title: "Plan updated",
+            description: "Plan details were saved successfully.",
+            variant: "success",
+          });
           closeEditModal();
+        },
+        onError: (error) => {
+          toast({
+            title: "Plan update failed",
+            description: getErrorMessage(error, "Could not update plan."),
+            variant: "error",
+          });
         },
       }
     );
@@ -76,11 +91,41 @@ export default function AllPlans() {
 
   const togglePlanStatus = (plan: Plan) => {
     if (plan.is_active) {
-      deactivatePlan(plan.id);
+      deactivatePlan(plan.id, {
+        onSuccess: () => {
+          toast({
+            title: "Plan deactivated",
+            description: `${plan.plan_name} is now inactive.`,
+            variant: "success",
+          });
+        },
+        onError: (error) => {
+          toast({
+            title: "Plan action failed",
+            description: getErrorMessage(error, "Could not deactivate plan."),
+            variant: "error",
+          });
+        },
+      });
       return;
     }
 
-    activatePlan(plan.id);
+    activatePlan(plan.id, {
+      onSuccess: () => {
+        toast({
+          title: "Plan activated",
+          description: `${plan.plan_name} is now active.`,
+          variant: "success",
+        });
+      },
+      onError: (error) => {
+        toast({
+          title: "Plan action failed",
+          description: getErrorMessage(error, "Could not activate plan."),
+          variant: "error",
+        });
+      },
+    });
   };
 
   const planColumns: RecordColumn<Plan>[] = [

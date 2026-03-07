@@ -14,6 +14,8 @@ import {
   type RecordColumn,
 } from "@/components/dashboard/RecordsOverview";
 import { useDeletePatientProfile, usePatients } from "@/hooks/usePatient";
+import { useToast } from "@/components/ui/toast";
+import { getErrorMessage } from "@/lib/errors";
 
 type PatientStatus = "Active" | "In Treatment" | "Discharged";
 
@@ -144,6 +146,7 @@ export default function PatientsList() {
   const navigate = useNavigate();
   const { data, isLoading } = usePatients();
   const { mutate: deleteProfile, isPending: isDeleting } = useDeletePatientProfile();
+  const { toast } = useToast();
 
   const patients: PatientRecord[] = useMemo(() => {
     const rows = extractPatients(data);
@@ -240,6 +243,11 @@ export default function PatientsList() {
               onClick={() => {
                 const id = Number(patient.profileId);
                 if (!id) {
+                  toast({
+                    title: "Delete blocked",
+                    description: "Invalid patient profile id.",
+                    variant: "error",
+                  });
                   return;
                 }
                 const ok = window.confirm(
@@ -248,7 +256,22 @@ export default function PatientsList() {
                 if (!ok) {
                   return;
                 }
-                deleteProfile(id);
+                deleteProfile(id, {
+                  onSuccess: () => {
+                    toast({
+                      title: "Patient deleted",
+                      description: `${patient.name} profile deleted successfully.`,
+                      variant: "success",
+                    });
+                  },
+                  onError: (error) => {
+                    toast({
+                      title: "Delete failed",
+                      description: getErrorMessage(error, "Could not delete patient profile."),
+                      variant: "error",
+                    });
+                  },
+                });
               }}
               disabled={isDeleting}
             >

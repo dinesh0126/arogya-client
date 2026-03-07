@@ -5,10 +5,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { useToast } from "@/components/ui/toast";
+import { getErrorMessage } from "@/lib/errors";
 
 export default function CreatePlan() {
   const navigate = useNavigate();
   const { mutate, isPending } = useCreatePlan();
+  const { toast } = useToast();
 
   const [formData, setFormData] = useState({
     plan_name: "",
@@ -40,11 +43,19 @@ export default function CreatePlan() {
       },
       {
         onSuccess: () => {
-          alert("Plan created successfully!");
+          toast({
+            title: "Plan created",
+            description: "Subscription plan has been added successfully.",
+            variant: "success",
+          });
           navigate("/admin/plans");
         },
-        onError: () => {
-          alert("Something went wrong!");
+        onError: (error) => {
+          toast({
+            title: "Plan create failed",
+            description: getErrorMessage(error, "Something went wrong!"),
+            variant: "error",
+          });
         },
       }
     );
