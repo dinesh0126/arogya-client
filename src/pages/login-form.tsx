@@ -135,7 +135,7 @@ export function LoginForm({
   return (
     <div
       className={cn(
-        "relative min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(14,165,233,0.18),_transparent_28%),radial-gradient(circle_at_80%_20%,_rgba(16,185,129,0.16),_transparent_24%),linear-gradient(135deg,#06131a_0%,#0b2230_48%,#f4fbff_48%,#f8fdff_100%)] px-4 py-8 text-slate-900 md:px-8 md:py-10 dark:text-white",
+        "relative min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(14,165,233,0.18),_transparent_28%),radial-gradient(circle_at_80%_20%,_rgba(16,185,129,0.16),_transparent_24%),linear-gradient(145deg,#020817_0%,#0f172a_40%,#10243a_100%)] px-4 py-8 text-white md:px-8 md:py-10",
         className
       )}
       {...props}
@@ -159,7 +159,7 @@ export function LoginForm({
 
           <div className="mt-12 max-w-xl space-y-5">
             <p className="text-5xl font-semibold leading-tight">
-              Manage doctors, patients, appointments, and plans from one clinical command center.
+             Arogya Admin Command Center
             </p>
             <p className="text-base font-medium text-slate-300">
               Secure workflows, real-time admin actions, and cleaner healthcare operations for your platform team.
@@ -191,21 +191,21 @@ export function LoginForm({
           </div>
         </div>
 
-        <Card className="border-white/70 bg-white/88 shadow-2xl backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/85">
+        <Card className="border-white/10 bg-slate-950/80 shadow-2xl backdrop-blur-xl">
           <CardHeader className="space-y-3 pb-2">
             <div className="flex items-center gap-3 lg:hidden">
               <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-cyan-500/10 text-cyan-700 dark:text-cyan-300">
                 <HeartPulse className="h-5 w-5" />
               </div>
               <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-cyan-700 dark:text-cyan-300">
+                <p className="text-xs uppercase tracking-[0.3em] text-cyan-300">
                   Arogya Healthcare
                 </p>
                 <p className="text-sm font-semibold">Doctor Platform Admin</p>
               </div>
             </div>
             <CardTitle className="text-2xl">Welcome back</CardTitle>
-            <CardDescription className="text-sm leading-6">
+            <CardDescription className="text-sm leading-6 text-slate-300">
               Sign in to manage doctors, patients, appointments, and plan operations.
             </CardDescription>
           </CardHeader>
@@ -213,7 +213,7 @@ export function LoginForm({
           <CardContent>
             <form onSubmit={handleLogin}>
               <FieldGroup className="gap-5">
-                <FieldSeparator className="font-normal text-slate-500">
+                <FieldSeparator className="font-normal text-slate-400">
                   Secure admin login
                 </FieldSeparator>
 
@@ -235,7 +235,7 @@ export function LoginForm({
                       setLoginError("");
                     }}
                     className={cn(
-                      "h-11 rounded-xl border-slate-200 bg-white/80 dark:border-slate-800 dark:bg-slate-900/60",
+                      "h-11 rounded-xl border-slate-800 bg-slate-900/70 text-white placeholder:text-slate-500",
                       errors.email ? "border-red-500 focus-visible:ring-red-500" : ""
                     )}
                   />
@@ -254,7 +254,7 @@ export function LoginForm({
                     </FieldLabel>
                     <Link
                       to="/forgot-password"
-                      className="ml-auto text-sm font-medium text-cyan-700 hover:underline dark:text-cyan-300"
+                      className="ml-auto text-sm font-medium text-cyan-300 hover:underline"
                     >
                       Reset access
                     </Link>
@@ -272,14 +272,14 @@ export function LoginForm({
                         setLoginError("");
                       }}
                       className={cn(
-                        "h-11 rounded-xl border-slate-200 bg-white/80 pr-10 dark:border-slate-800 dark:bg-slate-900/60",
+                        "h-11 rounded-xl border-slate-800 bg-slate-900/70 pr-10 text-white placeholder:text-slate-500",
                         errors.password ? "border-red-500 focus-visible:ring-red-500" : ""
                       )}
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
                     >
                       {showPassword ? (
                         <EyeClosedIcon className="h-4 w-4" />
@@ -295,7 +295,7 @@ export function LoginForm({
                 </Field>
 
                 {loginError && (
-                  <p className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-600 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-300">
+                  <p className="rounded-xl border border-rose-500/20 bg-rose-500/10 px-3 py-2 text-sm text-rose-300">
                     {loginError}
                   </p>
                 )}
@@ -310,7 +310,7 @@ export function LoginForm({
                   </Button>
                 </Field>
 
-                <FieldDescription className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-left text-sm leading-6 dark:border-slate-800 dark:bg-slate-900/60">
+                <FieldDescription className="rounded-2xl border border-slate-800 bg-slate-900/60 px-4 py-3 text-left text-sm leading-6 text-slate-300">
                   Your admin access controls the Arogya Healthcare doctor platform.
                   Keep credentials restricted to authorized operations staff only.
                 </FieldDescription>

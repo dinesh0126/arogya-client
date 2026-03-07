@@ -21,6 +21,37 @@ const getDefaultAvatar = (name: string) =>
     name || "Patient"
   )}`;
 
+const getInitialUserForm = () => ({
+  name: "",
+  email: "",
+  phone: "",
+  password: "",
+  dob: "",
+  gender: "male",
+  profile_pic: "",
+  aadhar: "",
+  role: "patient" as const,
+});
+
+const getInitialProfileForm = () => ({
+  emergency_contact: "",
+  preferred_language: "English",
+  consultation_type: "teleconsultation",
+  blood_group: "",
+  allergies: "",
+  existing_conditions: "",
+  medications: "",
+  age: "",
+  height: "",
+  weight: "",
+  bmi: "",
+  lifestyle_smoking: false,
+  lifestyle_alcohol: false,
+  insurence_provider: "",
+  policy_number: "",
+  payment_mode: "",
+});
+
 const extractUserId = (responseData: unknown): number => {
   const data = responseData as Record<string, unknown> | undefined;
   const nestedData = data?.data as Record<string, unknown> | undefined;
@@ -103,36 +134,9 @@ export default function AddPatient() {
     profileUserIdRef.current.focus();
   }, [userId]);
 
-  const [userForm, setUserForm] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    password: "",
-    dob: "",
-    gender: "male",
-    profile_pic: "",
-    aadhar: "",
-    role: "patient" as const,
-  });
+  const [userForm, setUserForm] = useState(getInitialUserForm);
 
-  const [profileForm, setProfileForm] = useState({
-    emergency_contact: "",
-    preferred_language: "English",
-    consultation_type: "teleconsultation",
-    blood_group: "",
-    allergies: "",
-    existing_conditions: "",
-    medications: "",
-    age: "",
-    height: "",
-    weight: "",
-    bmi: "",
-    lifestyle_smoking: false,
-    lifestyle_alcohol: false,
-    insurence_provider: "",
-    policy_number: "",
-    payment_mode: "",
-  });
+  const [profileForm, setProfileForm] = useState(getInitialProfileForm);
 
   const handleUserChange = (field: keyof typeof userForm, value: string) => {
     setUserForm((prev) => ({ ...prev, [field]: value }));
@@ -192,6 +196,7 @@ export default function AddPatient() {
           }
 
           setUserId(createdUserId);
+          setUserForm(getInitialUserForm());
           const text = `Patient created successfully. userId: ${createdUserId}`;
           setMessage(text);
           toast({ title: "Patient created", description: text, variant: "success" });
@@ -227,6 +232,7 @@ export default function AddPatient() {
           if (createdProfileId) {
             setProfileId(createdProfileId);
           }
+          setProfileForm(getInitialProfileForm());
           const text = `Patient profile created successfully for userId: ${userId}${
             createdProfileId ? ` (profileId: ${createdProfileId})` : ""
           }`;

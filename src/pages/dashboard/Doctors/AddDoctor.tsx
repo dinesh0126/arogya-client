@@ -18,6 +18,40 @@ const getDefaultAvatar = (name: string) =>
     name || "Doctor"
   )}`;
 
+const getInitialUserForm = () => ({
+  name: "",
+  email: "",
+  phone: "",
+  password: "",
+  dob: "",
+  gender: "male",
+  profile_pic: "",
+  aadhar: "",
+  role: "doctor" as const,
+});
+
+const getInitialProfileForm = () => ({
+  qualification: "",
+  experienceYears: "",
+  languagesSpoken: "",
+  consultationTypes: "tele, manual",
+  consultationFee: "",
+  workStartTime: "09:00",
+  workEndTime: "18:00",
+  availableDays: "Mon, Wed, Fri",
+  timezone: "Asia/Kolkata",
+  clinicName: "",
+  clinicAddress: "",
+  teleconsultationAvailable: true,
+  emergencySupport: true,
+  registrationNumber: "",
+  councilName: "",
+  verificationDoc: "",
+  govtIdDoc: "",
+  bankAccount: "",
+  panCard: "",
+});
+
 const extractUserId = (data: any): number =>
   Number(
     data?.user?.id ||
@@ -38,39 +72,9 @@ export default function AddDoctor() {
   const [userId, setUserId] = useState<number | null>(null);
   const [message, setMessage] = useState("");
 
-  const [userForm, setUserForm] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    password: "",
-    dob: "",
-    gender: "male",
-    profile_pic: "",
-    aadhar: "",
-    role: "doctor" as const,
-  });
+  const [userForm, setUserForm] = useState(getInitialUserForm);
 
-  const [profileForm, setProfileForm] = useState({
-    qualification: "",
-    experienceYears: "",
-    languagesSpoken: "",
-    consultationTypes: "tele, manual",
-    consultationFee: "",
-    workStartTime: "09:00",
-    workEndTime: "18:00",
-    availableDays: "Mon, Wed, Fri",
-    timezone: "Asia/Kolkata",
-    clinicName: "",
-    clinicAddress: "",
-    teleconsultationAvailable: true,
-    emergencySupport: true,
-    registrationNumber: "",
-    councilName: "",
-    verificationDoc: "",
-    govtIdDoc: "",
-    bankAccount: "",
-    panCard: "",
-  });
+  const [profileForm, setProfileForm] = useState(getInitialProfileForm);
 
   const handleUserChange = (field: keyof typeof userForm, value: string) => {
     setUserForm((prev) => ({ ...prev, [field]: value }));
@@ -102,6 +106,7 @@ export default function AddDoctor() {
             return;
           }
           setUserId(createdUserId);
+          setUserForm(getInitialUserForm());
           const text = `Doctor created successfully. userId: ${createdUserId}`;
           setMessage(text);
           toast({ title: "Doctor created", description: text, variant: "success" });
@@ -152,6 +157,7 @@ export default function AddDoctor() {
       },
       {
         onSuccess: () => {
+          setProfileForm(getInitialProfileForm());
           const text = `Doctor profile created successfully for userId: ${userId}`;
           setMessage(text);
           toast({ title: "Doctor profile created", description: text, variant: "success" });
