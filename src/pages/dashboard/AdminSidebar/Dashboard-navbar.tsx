@@ -120,7 +120,7 @@ const DashboardNavbar = () => {
               alt="profile"
               className="w-10 h-10 rounded-full object-cover border"
             />
-            <span className="font-medium hidden md:block">Tony Stark</span>
+            <span className="font-medium hidden md:block">Dishant</span>
           </DropdownMenuTrigger>
 
           <DropdownMenuContent className="w-48" align="end">
