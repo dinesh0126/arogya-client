@@ -1,10 +1,12 @@
 // src/api/axios.ts
 import axios from "axios";
 
+const DEFAULT_API_BASE_URL = "https://aarogya-first-api.onrender.com/api";
+const configuredBaseUrl = import.meta.env.VITE_API_BASE_URL?.trim();
+
 export const api = axios.create({
-  baseURL: "https://aarogya-first-api.onrender.com/api",
-  
- 
+  baseURL: configuredBaseUrl || (import.meta.env.DEV ? "/api" : DEFAULT_API_BASE_URL),
+  timeout: 15000,
 });
 
 // api.interceptors.request.use((config) => {

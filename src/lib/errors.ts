@@ -3,9 +3,24 @@ export const getErrorMessage = (
   fallback = "Something went wrong."
 ) => {
   const apiError = error as {
-    response?: { data?: { message?: string } };
+    code?: string;
+    response?: { data?: { message?: string | string[] } };
     message?: string;
   };
 
-  return apiError?.response?.data?.message || apiError?.message || fallback;
+  const apiMessage = apiError?.response?.data?.message;
+
+  if (Array.isArray(apiMessage)) {
+    return apiMessage[0] || fallback;
+  }
+
+  if (typeof apiMessage === "string" && apiMessage.trim()) {
+    return apiMessage;
+  }
+
+  if (apiError?.code === "ECONNABORTED") {
+    return "Login request timed out. Backend server ya network response nahi de raha.";
+  }
+
+  return apiError?.message || fallback;
 };
