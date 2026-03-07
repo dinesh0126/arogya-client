@@ -35,6 +35,6 @@ export interface CreateDoctorProfilePayload {
 }
 
 export interface CreateDoctorFlowPayload {
-  user: Omit<CreateDoctorUserPayload, "role">;
+  user: CreateDoctorUserPayload;
   profile: Omit<CreateDoctorProfilePayload, "userId">;
 }

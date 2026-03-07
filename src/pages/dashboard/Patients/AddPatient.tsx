@@ -109,6 +109,7 @@ export default function AddPatient() {
     gender: "male",
     profile_pic: "",
     aadhar: "",
+    role: "patient" as const,
   });
 
   const [profileForm, setProfileForm] = useState({
@@ -261,12 +262,12 @@ export default function AddPatient() {
       <div>
         <h1 className="text-3xl font-bold">Add Patient</h1>
         <p className="text-sm text-gray-400">
-          Step 1 create user with role patient, then create profile using same userId.
+          Step 1 me patient create hoga with hardcoded role patient, then same userId se profile create hogi.
         </p>
       </div>
 
       <Card className="p-6 space-y-4">
-        <h2 className="text-lg font-semibold">Step 1: Create User</h2>
+        <h2 className="text-lg font-semibold">Step 1: Create Patient</h2>
         <form onSubmit={handleCreateUser} className="grid gap-4 md:grid-cols-2">
           <div className="space-y-2">
             <Label>Name</Label>
@@ -324,6 +325,10 @@ export default function AddPatient() {
               <option value="other">other</option>
             </select>
           </div>
+          <div className="space-y-2">
+            <Label>Role</Label>
+            <Input value={userForm.role} readOnly />
+          </div>
           <div className="space-y-2 md:col-span-2">
             <Label>Profile Pic URL</Label>
             <Input
@@ -348,7 +353,7 @@ export default function AddPatient() {
               disabled={isCreatingUser}
               className="bg-blue-600 hover:bg-blue-700"
             >
-              {isCreatingUser ? "Creating user..." : "Create Patient User"}
+              {isCreatingUser ? "Creating patient..." : "Create Patient"}
             </Button>
             <span className="text-sm text-gray-400">
               userId: {userId ?? "Not created yet"}

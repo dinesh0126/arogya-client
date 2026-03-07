@@ -18,12 +18,12 @@ const extractUserId = (responseData: any): number => {
 };
 
 export const createDoctorUserApi = async (
-  payload: Omit<CreateDoctorUserPayload, "role">
+  payload: CreateDoctorUserPayload
 ) => {
   const userPayload = { ...payload };
   const res = await api.post("/admin/createuser", {
     ...userPayload,
-    role: "doctor",
+    role: payload.role,
   });
   return res.data;
 };
@@ -36,7 +36,7 @@ export const createDoctorProfileApi = async (
 };
 
 export const createDoctorFlowApi = async (payload: {
-  user: Omit<CreateDoctorUserPayload, "role">;
+  user: CreateDoctorUserPayload;
   profile: Omit<CreateDoctorProfilePayload, "userId">;
 }) => {
   const userRes = await createDoctorUserApi(payload.user);

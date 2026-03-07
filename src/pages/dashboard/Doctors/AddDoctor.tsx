@@ -44,6 +44,7 @@ export default function AddDoctor() {
     gender: "male",
     profile_pic: "",
     aadhar: "",
+    role: "doctor" as const,
   });
 
   const [profileForm, setProfileForm] = useState({
@@ -162,12 +163,12 @@ export default function AddDoctor() {
       <div>
         <h1 className="text-3xl font-bold">Add Doctor</h1>
         <p className="text-sm text-gray-400">
-          First create user (role doctor), then create doctor profile with same userId.
+          Step 1 me doctor create hoga with hardcoded role doctor, then same userId se profile create hogi.
         </p>
       </div>
 
       <Card className="p-6 space-y-4">
-        <h2 className="text-lg font-semibold">Step 1: Create User</h2>
+        <h2 className="text-lg font-semibold">Step 1: Create Doctor</h2>
         <form onSubmit={handleCreateUser} className="grid gap-4 md:grid-cols-2">
           <div className="space-y-2">
             <Label>Name</Label>
@@ -202,6 +203,10 @@ export default function AddDoctor() {
               <option value="other">other</option>
             </select>
           </div>
+          <div className="space-y-2">
+            <Label>Role</Label>
+            <Input value={userForm.role} readOnly />
+          </div>
           <div className="space-y-2 md:col-span-2">
             <Label>Profile Pic URL</Label>
             <Input
@@ -216,7 +221,7 @@ export default function AddDoctor() {
           </div>
           <div className="md:col-span-2 flex items-center gap-3">
             <Button type="submit" disabled={isCreatingUser} className="bg-blue-600 hover:bg-blue-700">
-              {isCreatingUser ? "Creating user..." : "Create User"}
+              {isCreatingUser ? "Creating doctor..." : "Create Doctor"}
             </Button>
             <span className="text-sm text-gray-400">
               userId: {userId ?? "Not created yet"}

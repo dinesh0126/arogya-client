@@ -56,12 +56,12 @@ const extractProfileId = (responseData: unknown): number => {
 };
 
 export const createPatientUserApi = async (
-  payload: Omit<CreatePatientUserPayload, "role">
+  payload: CreatePatientUserPayload
 ) => {
   const userPayload = { ...payload };
   const res = await api.post("/admin/createuser", {
     ...userPayload,
-    role: "patient",
+    role: payload.role,
   });
   return res.data;
 };
@@ -95,7 +95,7 @@ export const deletePatientProfileApi = async (profileId: number) => {
 };
 
 export const createPatientFlowApi = async (payload: {
-  user: Omit<CreatePatientUserPayload, "role">;
+  user: CreatePatientUserPayload;
   profile: Omit<CreatePatientProfilePayload, "userId">;
 }) => {
   const userRes = await createPatientUserApi(payload.user);
