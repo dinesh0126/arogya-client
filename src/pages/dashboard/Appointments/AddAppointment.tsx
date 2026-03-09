@@ -4,10 +4,9 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  useAppointmentBookingOptions,
-  useCreateAppointment,
-} from "@/hooks/useAppointment";
+import { useCreateAppointment } from "@/hooks/useAppointment";
+import { useDoctors } from "@/hooks/useDoctor";
+import { usePatients } from "@/hooks/usePatient";
 import { useToast } from "@/components/ui/toast";
 import { getErrorMessage } from "@/lib/errors";
 
@@ -21,9 +20,88 @@ const getLocalDateTime = () => {
 
 const detectTimezone = () => Intl.DateTimeFormat().resolvedOptions().timeZone;
 
+type SelectOption = {
+  id: string;
+  name: string;
+  subtitle: string;
+};
+
+const extractDoctors = (payload: unknown): unknown[] => {
+  if (Array.isArray(payload)) return payload;
+  if (!payload || typeof payload !== "object") return [];
+
+  const row = payload as Record<string, unknown>;
+  const candidates = [
+    row.data,
+    row.doctors,
+    row.profiles,
+    row.result,
+    typeof row.data === "object" && row.data
+      ? (row.data as Record<string, unknown>).data
+      : undefined,
+  ];
+
+  const match = candidates.find((item) => Array.isArray(item));
+  return Array.isArray(match) ? match : [];
+};
+
+const extractPatients = (payload: unknown): unknown[] => {
+  if (Array.isArray(payload)) return payload;
+  if (!payload || typeof payload !== "object") return [];
+
+  const row = payload as Record<string, unknown>;
+  const candidates = [
+    row.data,
+    row.patients,
+    row.profiles,
+    row.result,
+    typeof row.data === "object" && row.data
+      ? (row.data as Record<string, unknown>).data
+      : undefined,
+  ];
+
+  const match = candidates.find((item) => Array.isArray(item));
+  return Array.isArray(match) ? match : [];
+};
+
+const mapDoctorOption = (doctor: unknown): SelectOption => {
+  const row = (doctor ?? {}) as Record<string, unknown>;
+  const user = (row.user ?? {}) as Record<string, unknown>;
+
+  return {
+    id: String(row.user_id ?? row.userId ?? user.id ?? ""),
+    name: String(row.doctor_name ?? row.name ?? user.name ?? "Unnamed Doctor"),
+    subtitle:
+      [
+        String(row.specialization ?? ""),
+        String(row.clinic_name ?? row.clinicName ?? ""),
+      ]
+        .filter(Boolean)
+        .join(" | ") || "Doctor profile",
+  };
+};
+
+const mapPatientOption = (patient: unknown): SelectOption => {
+  const row = (patient ?? {}) as Record<string, unknown>;
+  const user = (row.user ?? {}) as Record<string, unknown>;
+
+  return {
+    id: String(row.user_id ?? row.userId ?? user.id ?? ""),
+    name: String(row.name ?? row.patient_name ?? user.name ?? "Unnamed Patient"),
+    subtitle:
+      [
+        String(row.consultation_type ?? ""),
+        String(row.phone ?? user.phone ?? ""),
+      ]
+        .filter(Boolean)
+        .join(" | ") || "Patient profile",
+  };
+};
+
 export default function AddAppointment() {
   const { mutate: createAppointment, isPending } = useCreateAppointment();
-  const { data: bookingOptions, isLoading: optionsLoading } = useAppointmentBookingOptions();
+  const { data: doctorsData, isLoading: doctorsLoading } = useDoctors();
+  const { data: patientsData, isLoading: patientsLoading } = usePatients();
   const { toast } = useToast();
 
   const [formData, setFormData] = useState({
@@ -37,8 +115,9 @@ export default function AddAppointment() {
   });
 
   const [message, setMessage] = useState("");
-  const doctorOptions = bookingOptions?.doctors ?? [];
-  const patientOptions = bookingOptions?.patients ?? [];
+  const doctorOptions = extractDoctors(doctorsData).map(mapDoctorOption).filter((item) => item.id);
+  const patientOptions =
+    extractPatients(patientsData).map(mapPatientOption).filter((item) => item.id);
   const selectedDoctor =
     doctorOptions.find((item) => String(item.id) === formData.doctor_id) ?? null;
   const selectedPatient =
@@ -139,7 +218,7 @@ export default function AddAppointment() {
                   required
                 >
                   <option value="" className="bg-slate-900">
-                      {optionsLoading ? "Loading doctors..." : "Select doctor"}
+                    {doctorsLoading ? "Loading doctors..." : "Select doctor"}
                   </option>
                   {doctorOptions.map((doctor) => (
                     <option key={doctor.id} value={doctor.id} className="bg-slate-900">
@@ -168,7 +247,7 @@ export default function AddAppointment() {
                   required
                 >
                   <option value="" className="bg-slate-900">
-                    {optionsLoading ? "Loading patients..." : "Select patient"}
+                    {patientsLoading ? "Loading patients..." : "Select patient"}
                   </option>
                   {patientOptions.map((patient) => (
                     <option key={patient.id} value={patient.id} className="bg-slate-900">
