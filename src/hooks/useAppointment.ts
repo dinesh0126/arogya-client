@@ -1,6 +1,5 @@
 import {
   createAppointmentApi,
-  fetchAppointmentBookingOptionsApi,
   fetchAllAppointmentsApi,
 } from "@/api/appointmentApi";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -30,14 +29,5 @@ export const useCreateAppointment = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["appointments"] });
     },
-  });
-};
-
-export const useAppointmentBookingOptions = () => {
-  return useQuery({
-    queryKey: ["appointment-booking-options"],
-    queryFn: fetchAppointmentBookingOptionsApi,
-    refetchOnMount: "always",
-    staleTime: 0,
   });
 };
