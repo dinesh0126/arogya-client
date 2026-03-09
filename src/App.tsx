@@ -17,36 +17,39 @@ import CreatePlan from "./pages/dashboard/plan/CreatePlan";
 import AllPlans from "./pages/dashboard/plan/AllPlans";
 
 function App() {
- 
   return (
     <>
-      
-        <Routes>
-         {/*Auth Routes */}
-          <Route path="/login" element={<LoginForm />} />
-          <Route path="/forgot-password" element={<Signup />} />
+      <Routes>
+        {/*Auth Routes */}
+        <Route path="/login" element={<LoginForm />} />
+        <Route path="/forgot-password" element={<Signup />} />
 
-          {/* dashboard Routes */}
-          <Route path="/" element={
+        {/* dashboard Routes */}
+        <Route
+          path="/"
+          element={
             <ProtectedAuth>
-            <DashboardLayout />
+              <DashboardLayout />
             </ProtectedAuth>
-            }>
-<Route index element={<Admin/>} />
-<Route path="/admin/appointments/all" element={<AllAppointments/>} />
-<Route path="/admin/plans" element={<AllPlans/>} />
-<Route path="/admin/plans/create" element={<CreatePlan/>} />
-<Route path="/admin/appointments/add" element={<AddAppointment/>} />
-<Route path="/admin/patients" element={<PatientsList/>} />
-<Route path="/admin/patients/add-patient" element={<AddPatient/>} />
-<Route path="/admin/doctors/doctor-list" element={<DoctorsList/>} />
-<Route path="/admin/doctors/add-doctor" element={<AddDoctor/>} />
-<Route path="/admin/doctors/kyc-verification" element={<DoctorKycVerification/>} />
-          </Route>
+          }
+        >
+          <Route index element={<Admin />} />
+          <Route path="/admin/appointments/all" element={<AllAppointments />} />
+          <Route path="/admin/plans" element={<AllPlans />} />
+          <Route path="/admin/plans/create" element={<CreatePlan />} />
+          <Route path="/admin/appointments/add" element={<AddAppointment />} />
+          <Route path="/admin/patients" element={<PatientsList />} />
+          <Route path="/admin/patients/add-patient" element={<AddPatient />} />
+          <Route path="/admin/doctors/doctor-list" element={<DoctorsList />} />
+          <Route path="/admin/doctors/add-doctor" element={<AddDoctor />} />
+          <Route
+            path="/admin/doctors/kyc-verification"
+            element={<DoctorKycVerification />}
+          />
+        </Route>
 
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-  
+        <Route path="*" element={<NotFound />} />
+      </Routes>
     </>
   );
 }

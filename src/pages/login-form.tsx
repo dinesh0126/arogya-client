@@ -204,7 +204,7 @@ export function LoginForm({
                 <p className="text-sm font-semibold">Doctor Platform Admin</p>
               </div>
             </div>
-            <CardTitle className="text-2xl">Welcome back</CardTitle>
+            <CardTitle className="text-2xl text-white">Welcome back</CardTitle>
             <CardDescription className="text-sm leading-6 text-slate-300">
               Sign in to manage doctors, patients, appointments, and plan operations.
             </CardDescription>
