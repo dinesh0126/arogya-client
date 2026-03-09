@@ -43,3 +43,15 @@ export interface AppointmentListResponse {
   pagination: AppointmentPagination;
   raw: unknown;
 }
+
+export interface AppointmentBookingOption {
+  id: number;
+  name: string;
+  subtitle: string;
+}
+
+export interface AppointmentBookingOptionsResponse {
+  doctors: AppointmentBookingOption[];
+  patients: AppointmentBookingOption[];
+  raw: unknown;
+}

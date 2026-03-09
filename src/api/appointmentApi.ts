@@ -1,5 +1,7 @@
 import { api } from "./axios";
 import type {
+  AppointmentBookingOption,
+  AppointmentBookingOptionsResponse,
   AppointmentListResponse,
   AppointmentPagination,
   AppointmentRecord,
@@ -117,6 +119,67 @@ const extractPagination = (
   };
 };
 
+const extractBookingRows = (payload: unknown, keys: string[]): unknown[] => {
+  const data = asRecord(payload);
+  const nestedData = asRecord(data.data);
+
+  const candidates: unknown[] = [
+    ...keys.map((key) => data[key]),
+    ...keys.map((key) => nestedData[key]),
+    data.data,
+    nestedData.data,
+  ];
+
+  const match = candidates.find((item) => Array.isArray(item));
+  return Array.isArray(match) ? match : [];
+};
+
+const mapBookingOption = (
+  rowValue: unknown,
+  kind: "doctor" | "patient"
+): AppointmentBookingOption => {
+  const row = asRecord(rowValue);
+  const user = asRecord(row.user);
+
+  const id = asNumber(
+    row.id ??
+      row[`${kind}_id`] ??
+      row[`${kind}Id`] ??
+      row[`${kind}_profile_id`] ??
+      row.profile_id ??
+      row.profileId ??
+      row.user_id ??
+      user.id,
+    0
+  );
+
+  const name = asString(
+    row.name ??
+      row[`${kind}_name`] ??
+      user.name,
+    kind === "doctor" ? "Unnamed Doctor" : "Unnamed Patient"
+  );
+
+  const subtitleParts =
+    kind === "doctor"
+      ? [
+          asString(row.specialization),
+          asString(row.clinic_name ?? row.clinicName),
+          asString(row.email ?? user.email),
+        ]
+      : [
+          asString(row.consultation_type),
+          asString(row.phone ?? user.phone),
+          asString(row.email ?? user.email),
+        ];
+
+  return {
+    id,
+    name,
+    subtitle: subtitleParts.filter(Boolean).join(" | "),
+  };
+};
+
 const mapAppointment = (appointment: unknown): AppointmentRecord => {
   const row = asRecord(appointment);
   const doctor = asRecord(row.doctor);
@@ -215,3 +278,22 @@ export const fetchAllAppointmentsApi = async ({
     raw: responseData,
   };
 };
+
+export const fetchAppointmentBookingOptionsApi =
+  async (): Promise<AppointmentBookingOptionsResponse> => {
+    const res = await api.get("/appointment/booking-options");
+    const payload = res.data;
+
+    const doctors = extractBookingRows(payload, ["doctors", "doctorOptions"]).map((item) =>
+      mapBookingOption(item, "doctor")
+    );
+    const patients = extractBookingRows(payload, ["patients", "patientOptions"]).map((item) =>
+      mapBookingOption(item, "patient")
+    );
+
+    return {
+      doctors: doctors.filter((item) => item.id > 0),
+      patients: patients.filter((item) => item.id > 0),
+      raw: payload,
+    };
+  };
