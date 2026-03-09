@@ -122,7 +122,7 @@ export default function CreatePlan() {
               onChange={(e) =>
                 handleChange("plan_type", e.target.value)
               }
-              className="w-full border rounded-md px-3 py-2"
+              className="w-full rounded-md border border-input bg-card px-3 py-2 text-foreground"
             >
               <option value="free">Free</option>
               <option value="yearly">Yearly</option>

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { CalendarPlus, Clock, FileText, Globe, Stethoscope, User } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +12,16 @@ import { useToast } from "@/components/ui/toast";
 import { getErrorMessage } from "@/lib/errors";
 
 const appointmentTypes = ["teleconsultation", "followup", "in_person", "emergency"];
+
+const getInitialFormState = () => ({
+  doctor_id: "",
+  patient_id: "",
+  start_local: getLocalDateTime(),
+  duration: "60",
+  type: "teleconsultation",
+  notes: "",
+  user_timezone: detectTimezone(),
+});
 
 const getLocalDateTime = () => {
   const now = new Date();
@@ -99,20 +110,13 @@ const mapPatientOption = (patient: unknown): SelectOption => {
 };
 
 export default function AddAppointment() {
+  const navigate = useNavigate();
   const { mutate: createAppointment, isPending } = useCreateAppointment();
   const { data: doctorsData, isLoading: doctorsLoading } = useDoctors();
   const { data: patientsData, isLoading: patientsLoading } = usePatients();
   const { toast } = useToast();
 
-  const [formData, setFormData] = useState({
-    doctor_id: "",
-    patient_id: "",
-    start_local: getLocalDateTime(),
-    duration: "60",
-    type: "teleconsultation",
-    notes: "First consultation",
-    user_timezone: detectTimezone(),
-  });
+  const [formData, setFormData] = useState(getInitialFormState);
 
   const [message, setMessage] = useState("");
   const doctorOptions = extractDoctors(doctorsData).map(mapDoctorOption).filter((item) => item.id);
@@ -170,12 +174,14 @@ export default function AddAppointment() {
 
     createAppointment(payload, {
       onSuccess: () => {
+        setFormData(getInitialFormState());
         setMessage("Appointment created successfully.");
         toast({
           title: "Appointment created",
           description: "New appointment has been added successfully.",
           variant: "success",
         });
+        navigate("/admin/appointments/all");
       },
       onError: (error: unknown) => {
         const text = getErrorMessage(error, "Failed to create appointment.");
@@ -189,10 +195,6 @@ export default function AddAppointment() {
     <div className="w-full space-y-6 px-2 sm:px-4 lg:px-6 xl:px-8">
       <div className="space-y-2">
         <h1 className="text-3xl font-bold">Add Appointment</h1>
-        <p className="text-sm text-gray-400">
-          Doctor aur patient list se select karke appointment create karein. Backend ko
-          `doctor_id` aur `patient_id` hi bheja jayega.
-        </p>
       </div>
 
       <form onSubmit={handleSubmit}>
@@ -201,7 +203,6 @@ export default function AddAppointment() {
             <CalendarPlus className="h-5 w-5 text-blue-400" />
             <div>
               <h2 className="text-lg font-semibold">Appointment Details</h2>
-              <p className="text-sm text-gray-400">Doctor aur patient choose karke baki details fill karein.</p>
             </div>
           </div>
 
@@ -214,14 +215,14 @@ export default function AddAppointment() {
                   id="doctor_id"
                   value={formData.doctor_id}
                   onChange={(event) => handleChange("doctor_id", event.target.value)}
-                  className="w-full rounded-md border border-gray-600 bg-transparent py-2 pl-10 pr-3 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
+                  className="w-full rounded-md border border-input bg-card py-2 pl-10 pr-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
                   required
                 >
-                  <option value="" className="bg-slate-900">
+                  <option value="">
                     {doctorsLoading ? "Loading doctors..." : "Select doctor"}
                   </option>
                   {doctorOptions.map((doctor) => (
-                    <option key={doctor.id} value={doctor.id} className="bg-slate-900">
+                    <option key={doctor.id} value={doctor.id}>
                       {doctor.name} ({doctor.id})
                     </option>
                   ))}
@@ -243,14 +244,14 @@ export default function AddAppointment() {
                   id="patient_id"
                   value={formData.patient_id}
                   onChange={(event) => handleChange("patient_id", event.target.value)}
-                  className="w-full rounded-md border border-gray-600 bg-transparent py-2 pl-10 pr-3 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
+                  className="w-full rounded-md border border-input bg-card py-2 pl-10 pr-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
                   required
                 >
-                  <option value="" className="bg-slate-900">
+                  <option value="">
                     {patientsLoading ? "Loading patients..." : "Select patient"}
                   </option>
                   {patientOptions.map((patient) => (
-                    <option key={patient.id} value={patient.id} className="bg-slate-900">
+                    <option key={patient.id} value={patient.id}>
                       {patient.name} ({patient.id})
                     </option>
                   ))}
@@ -265,10 +266,10 @@ export default function AddAppointment() {
             </div>
 
             <div className="space-y-2 md:col-span-2">
-              <div className="grid gap-3 rounded-lg border border-gray-700/70 bg-slate-900/40 p-3 sm:grid-cols-2">
-                <div className="rounded-md border border-gray-700/60 bg-slate-950/40 p-3">
+              <div className="grid gap-3 rounded-lg border border-border bg-muted/40 p-3 sm:grid-cols-2">
+                <div className="rounded-md border border-border bg-card p-3">
                   <p className="text-xs uppercase tracking-wide text-gray-500">Selected doctor</p>
-                  <p className="mt-1 text-sm font-medium text-white">
+                  <p className="mt-1 text-sm font-medium text-foreground">
                     {selectedDoctor?.name ?? "No doctor selected"}
                   </p>
                   <p className="text-xs text-gray-400">
@@ -277,9 +278,9 @@ export default function AddAppointment() {
                       : "Doctor ID payload me yahi jayegi."}
                   </p>
                 </div>
-                <div className="rounded-md border border-gray-700/60 bg-slate-950/40 p-3">
+                <div className="rounded-md border border-border bg-card p-3">
                   <p className="text-xs uppercase tracking-wide text-gray-500">Selected patient</p>
-                  <p className="mt-1 text-sm font-medium text-white">
+                  <p className="mt-1 text-sm font-medium text-foreground">
                     {selectedPatient?.name ?? "No patient selected"}
                   </p>
                   <p className="text-xs text-gray-400">
@@ -328,10 +329,10 @@ export default function AddAppointment() {
                 id="type"
                 value={formData.type}
                 onChange={(event) => handleChange("type", event.target.value)}
-                className="w-full rounded-md border border-gray-600 bg-transparent px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
+                className="w-full rounded-md border border-input bg-card px-3 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
               >
                 {appointmentTypes.map((type) => (
-                  <option key={type} value={type} className="bg-slate-900">
+                  <option key={type} value={type}>
                     {type}
                   </option>
                 ))}
@@ -362,7 +363,7 @@ export default function AddAppointment() {
                   rows={4}
                   value={formData.notes}
                   onChange={(event) => handleChange("notes", event.target.value)}
-                  className="w-full rounded-md border border-gray-600 bg-transparent px-3 py-2 pl-10 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
+                  className="w-full rounded-md border border-input bg-card px-3 py-2 pl-10 text-sm text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
                 />
               </div>
             </div>

@@ -322,7 +322,7 @@ export default function AllPlans() {
                 <select
                   value={editingForm.plan_type}
                   onChange={(event) => handleEditChange("plan_type", event.target.value)}
-                  className="w-full border rounded-md px-3 py-2 bg-transparent"
+                  className="w-full rounded-md border border-input bg-card px-3 py-2 text-foreground"
                 >
                   <option value="free">Free</option>
                   <option value="yearly">Yearly</option>

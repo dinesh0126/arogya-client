@@ -339,7 +339,7 @@ export default function AddPatient() {
             <select
               value={userForm.gender}
               onChange={(event) => handleUserChange("gender", event.target.value)}
-              className="w-full rounded-md border px-3 py-2 bg-transparent"
+              className="w-full rounded-md border border-input bg-card px-3 py-2 text-foreground"
               required
             >
               <option value="male">male</option>

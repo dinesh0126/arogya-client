@@ -222,9 +222,6 @@ export default function AllAppointments() {
       <div className="flex flex-col gap-3 sm:gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
           <h1 className="text-2xl sm:text-3xl font-bold truncate">All Appointments</h1>
-          <p className="text-xs sm:text-sm text-gray-400 truncate">
-            Source: `/appointment?page={"{page}"}&limit={"{limit}"}&status={"{status}"}`
-          </p>
         </div>
         <div className="flex gap-2 sm:gap-3 flex-shrink-0">
           <Button variant="outline" className="cursor-pointer">

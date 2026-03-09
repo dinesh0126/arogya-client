@@ -139,4 +139,18 @@ button:disabled,
   body {
     @apply bg-background text-foreground;
   }
+  select,
+  textarea {
+    color: var(--foreground);
+    background-color: color-mix(in oklab, var(--background) 92%, black 8%);
+    border-color: var(--input);
+  }
+  .dark select,
+  .dark textarea {
+    background-color: color-mix(in oklab, var(--background) 82%, white 6%);
+  }
+  select option {
+    color: var(--foreground);
+    background-color: var(--card);
+  }
 }
