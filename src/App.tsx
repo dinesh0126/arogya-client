@@ -15,6 +15,7 @@ import DoctorKycVerification from "./pages/dashboard/Doctors/DoctorKycVerificati
 import NotFound from "./components/NotFound";
 import CreatePlan from "./pages/dashboard/plan/CreatePlan";
 import AllPlans from "./pages/dashboard/plan/AllPlans";
+import UserManagement from "./pages/dashboard/UserManagement/UserManagement";
 
 function App() {
   return (
@@ -42,6 +43,7 @@ function App() {
           <Route path="/admin/patients/add-patient" element={<AddPatient />} />
           <Route path="/admin/doctors/doctor-list" element={<DoctorsList />} />
           <Route path="/admin/doctors/add-doctor" element={<AddDoctor />} />
+          <Route path="/admin/user-management" element={<UserManagement />} />
           <Route
             path="/admin/doctors/kyc-verification"
             element={<DoctorKycVerification />}

@@ -1,603 +1,422 @@
-import { useEffect, useRef, useState } from "react";
-import { useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  useCreatePatientProfile,
-  useCreatePatientUser,
-  useUpdatePatientProfile,
-} from "@/hooks/usePatient";
-import type {
-  CreatePatientProfilePayload,
-  UpdatePatientProfilePayload,
-} from "@/types/patient";
 import { useToast } from "@/components/ui/toast";
+import { UserSearchSelect, type UserSearchRecord } from "@/components/dashboard/UserSearchSelect";
+import { useAllUsers } from "@/hooks/useAdmin";
+import { useCreatePatientProfile } from "@/hooks/usePatient";
 import { getErrorMessage } from "@/lib/errors";
+import type { CreatePatientProfilePayload } from "@/types/patient";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMemo, useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 
-const getDefaultAvatar = (name: string) =>
-  `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(
-    name || "Patient"
-  )}`;
-
-const getInitialUserForm = () => ({
-  name: "",
-  email: "",
-  phone: "",
-  password: "",
-  dob: "",
-  gender: "male",
-  profile_pic: "",
-  aadhar: "",
-  role: "patient" as const,
+const patientProfileSchema = z.object({
+  userId: z.number().int().positive("Select a patient user"),
+  emergency_contact: z.string().min(3, "Emergency contact is required"),
+  preferred_language: z.string().min(2, "Preferred language is required"),
+  consultation_type: z.string().min(2, "Consultation type is required"),
+  blood_group: z.string().min(1, "Blood group is required"),
+  allergies: z.string().min(1, "Allergies is required"),
+  existing_conditions: z.string().min(1, "Existing conditions is required"),
+  medications: z.string().min(1, "Medications is required"),
+  age: z.number().min(0, "Age is required"),
+  height: z.number().min(0, "Height is required"),
+  weight: z.number().min(0, "Weight is required"),
+  bmi: z.number().min(0, "BMI is required"),
+  lifestyle_smoking: z.boolean(),
+  lifestyle_alcohol: z.boolean(),
+  insurence_provider: z.string().min(1, "Insurance provider is required"),
+  policy_number: z.string().min(1, "Policy number is required"),
+  payment_mode: z.string().min(1, "Payment mode is required"),
 });
 
-const getInitialProfileForm = () => ({
-  emergency_contact: "",
-  preferred_language: "English",
-  consultation_type: "teleconsultation",
-  blood_group: "",
-  allergies: "",
-  existing_conditions: "",
-  medications: "",
-  age: "",
-  height: "",
-  weight: "",
-  bmi: "",
-  lifestyle_smoking: false,
-  lifestyle_alcohol: false,
-  insurence_provider: "",
-  policy_number: "",
-  payment_mode: "",
-});
+type PatientProfileFormValues = z.infer<typeof patientProfileSchema>;
 
-const extractUserId = (responseData: unknown): number => {
-  const data = responseData as Record<string, unknown> | undefined;
-  const nestedData = data?.data as Record<string, unknown> | undefined;
-  const user = data?.user as Record<string, unknown> | undefined;
-  const newUser = data?.newUser as Record<string, unknown> | undefined;
-  const createdUser = data?.createdUser as Record<string, unknown> | undefined;
-  const createduser = data?.createduser as Record<string, unknown> | undefined;
-  const result = data?.result as Record<string, unknown> | undefined;
-  const nestedUser = nestedData?.user as Record<string, unknown> | undefined;
-  const nestedNewUser = nestedData?.newUser as Record<string, unknown> | undefined;
-  const nestedCreatedUser = nestedData?.createdUser as
-    | Record<string, unknown>
-    | undefined;
+const tryExtractFieldErrors = (error: unknown): Record<string, string> => {
+  const err = error as any;
+  const data = err?.response?.data ?? err?.data ?? err;
 
-  return Number(
-    user?.id ??
-      newUser?.id ??
-      createdUser?.id ??
-      createduser?.id ??
-      result?.userId ??
-      result?.id ??
-      data?.userId ??
-      data?.user_id ??
-      nestedUser?.id ??
-      nestedNewUser?.id ??
-      nestedCreatedUser?.id ??
-      nestedData?.userId ??
-      nestedData?.user_id ??
-      nestedData?.id ??
-      0
-  );
+  const fieldErrors: Record<string, string> = {};
+
+  const issues =
+    data?.issues ||
+    data?.error?.issues ||
+    data?.errors ||
+    data?.error?.errors ||
+    data?.zodError?.issues;
+
+  if (Array.isArray(issues)) {
+    for (const issue of issues) {
+      const path =
+        (Array.isArray(issue?.path) ? issue.path[0] : issue?.path) ||
+        issue?.field ||
+        issue?.key;
+      const message = issue?.message || issue?.msg;
+      if (typeof path === "string" && typeof message === "string") {
+        fieldErrors[path] = message;
+      }
+    }
+  }
+
+  const objectFieldErrors =
+    data?.fieldErrors ||
+    data?.errors?.fieldErrors ||
+    data?.error?.fieldErrors ||
+    data?.error?.errors?.fieldErrors;
+
+  if (objectFieldErrors && typeof objectFieldErrors === "object") {
+    for (const [key, value] of Object.entries(objectFieldErrors)) {
+      if (typeof value === "string") {
+        fieldErrors[key] = value;
+      } else if (Array.isArray(value) && typeof value[0] === "string") {
+        fieldErrors[key] = value[0];
+      }
+    }
+  }
+
+  return fieldErrors;
 };
-
-const extractProfileId = (responseData: unknown): number => {
-  const data = responseData as Record<string, unknown> | undefined;
-  const nestedData = data?.data as Record<string, unknown> | undefined;
-  const profile = data?.profile as Record<string, unknown> | undefined;
-  const patientProfile = data?.patientProfile as Record<string, unknown> | undefined;
-
-  return Number(
-    profile?.id ??
-      patientProfile?.id ??
-      data?.id ??
-      data?.profileId ??
-      nestedData?.id ??
-      nestedData?.profileId ??
-      0
-  );
-};
-
-const toNumber = (value: string) => Number(value || 0);
 
 export default function AddPatient() {
-  const location = useLocation();
-  const profileUserIdRef = useRef<HTMLInputElement | null>(null);
   const { toast } = useToast();
-  const { mutate: createUser, isPending: isCreatingUser } = useCreatePatientUser();
-  const { mutate: createProfile, isPending: isCreatingProfile } =
-    useCreatePatientProfile();
-  const { mutate: updateProfile, isPending: isUpdatingProfile } =
-    useUpdatePatientProfile();
+  const { data: allUsers = [], isLoading: usersLoading } = useAllUsers();
+  const { mutateAsync, isPending } = useCreatePatientProfile();
 
-  const [userId, setUserId] = useState<number | null>(null);
-  const stateProfileId = Number(
-    (location.state as { profileId?: string } | null)?.profileId || 0
+  const [selectedUser, setSelectedUser] = useState<UserSearchRecord | null>(null);
+
+  const userOptions = useMemo<UserSearchRecord[]>(() => {
+    return allUsers
+      .map((u) => {
+        const raw = u as any;
+        const id = Number(raw?.id ?? raw?.userId ?? raw?.user_id ?? 0);
+        const name = String(raw?.name ?? raw?.fullName ?? raw?.username ?? "").trim();
+        const email = String(raw?.email ?? "").trim();
+        const phone = raw?.phone ? String(raw.phone) : undefined;
+        const role = raw?.role ? String(raw.role) : undefined;
+        if (!id || !name || !email) return null;
+        return { id, name, email, phone, role, raw };
+      })
+      .filter(Boolean) as UserSearchRecord[];
+  }, [allUsers]);
+
+  const defaultValues = useMemo<PatientProfileFormValues>(
+    () => ({
+      userId: 0,
+      emergency_contact: "",
+      preferred_language: "English",
+      consultation_type: "teleconsultation",
+      blood_group: "",
+      allergies: "",
+      existing_conditions: "",
+      medications: "",
+      age: 0,
+      height: 0,
+      weight: 0,
+      bmi: 0,
+      lifestyle_smoking: false,
+      lifestyle_alcohol: false,
+      insurence_provider: "",
+      policy_number: "",
+      payment_mode: "",
+    }),
+    []
   );
-  const [profileId, setProfileId] = useState<number | null>(
-    stateProfileId || null
-  );
-  const [message, setMessage] = useState("");
 
-  useEffect(() => {
-    if (!userId || !profileUserIdRef.current) {
-      return;
-    }
-    profileUserIdRef.current.scrollIntoView({
-      behavior: "smooth",
-      block: "center",
-    });
-    profileUserIdRef.current.focus();
-  }, [userId]);
-
-  const [userForm, setUserForm] = useState(getInitialUserForm);
-
-  const [profileForm, setProfileForm] = useState(getInitialProfileForm);
-
-  const handleUserChange = (field: keyof typeof userForm, value: string) => {
-    setUserForm((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const handleProfileChange = (
-    field: keyof typeof profileForm,
-    value: string | boolean
-  ) => {
-    setProfileForm((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const buildCreateProfilePayload = (): Omit<
-    CreatePatientProfilePayload,
-    "userId"
-  > => ({
-    emergency_contact: profileForm.emergency_contact,
-    preferred_language: profileForm.preferred_language,
-    consultation_type: profileForm.consultation_type,
-    blood_group: profileForm.blood_group,
-    allergies: profileForm.allergies,
-    existing_conditions: profileForm.existing_conditions,
-    medications: profileForm.medications,
-    age: toNumber(profileForm.age),
-    height: toNumber(profileForm.height),
-    weight: toNumber(profileForm.weight),
-    bmi: toNumber(profileForm.bmi),
-    lifestyle_smoking: profileForm.lifestyle_smoking,
-    lifestyle_alcohol: profileForm.lifestyle_alcohol,
-    insurence_provider: profileForm.insurence_provider,
-    policy_number: profileForm.policy_number,
-    payment_mode: profileForm.payment_mode,
+  const form = useForm<PatientProfileFormValues>({
+    resolver: zodResolver(patientProfileSchema),
+    defaultValues,
+    mode: "onSubmit",
   });
 
-  const buildUpdateProfilePayload = (): UpdatePatientProfilePayload => ({
-    ...buildCreateProfilePayload(),
-    userId: userId ?? undefined,
-  });
-
-  const handleCreateUser = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setMessage("");
-
-    createUser(
-      {
-        ...userForm,
-        profile_pic: userForm.profile_pic || getDefaultAvatar(userForm.name),
-      },
-      {
-        onSuccess: (data) => {
-          const createdUserId = extractUserId(data);
-          if (!createdUserId) {
-            const text = "Patient created but userId not found in response.";
-            setMessage(text);
-            toast({ title: "Patient create issue", description: text, variant: "error" });
-            return;
-          }
-
-          setUserId(createdUserId);
-          setUserForm(getInitialUserForm());
-          const text = `Patient created successfully. userId: ${createdUserId}`;
-          setMessage(text);
-          toast({ title: "Patient created", description: text, variant: "success" });
-        },
-        onError: (error: unknown) => {
-          const text = getErrorMessage(error, "Patient create failed");
-          setMessage(text);
-          toast({ title: "Patient create failed", description: text, variant: "error" });
-        },
+  const onSubmit = async (values: PatientProfileFormValues) => {
+    form.clearErrors();
+    try {
+      const payload: CreatePatientProfilePayload = {
+        ...values,
+        userId: Number(values.userId),
+        age: Number(values.age),
+        height: Number(values.height),
+        weight: Number(values.weight),
+        bmi: Number(values.bmi),
+      };
+      await mutateAsync(payload);
+      toast({
+        title: "Patient profile created",
+        description: "Patient profile saved successfully.",
+        variant: "success",
+      });
+      form.reset({ ...defaultValues, userId: values.userId });
+    } catch (err) {
+      const fieldErrors = tryExtractFieldErrors(err);
+      for (const [key, message] of Object.entries(fieldErrors)) {
+        if (key in defaultValues) {
+          form.setError(key as keyof PatientProfileFormValues, {
+            type: "server",
+            message,
+          });
+        }
       }
-    );
-  };
-
-  const handleCreateProfile = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (!userId) {
-      const text = "First create patient, then create profile.";
-      setMessage(text);
-      toast({ title: "Patient profile blocked", description: text, variant: "error" });
-      return;
+      const text = getErrorMessage(err, "Create patient profile failed");
+      form.setError("root", { type: "server", message: text });
+      toast({ title: "Create failed", description: text, variant: "error" });
     }
-
-    setMessage("");
-
-    createProfile(
-      {
-        userId,
-        ...buildCreateProfilePayload(),
-      },
-      {
-        onSuccess: (data) => {
-          const createdProfileId = extractProfileId(data);
-          if (createdProfileId) {
-            setProfileId(createdProfileId);
-          }
-          setProfileForm(getInitialProfileForm());
-          const text = `Patient profile created successfully for userId: ${userId}${
-            createdProfileId ? ` (profileId: ${createdProfileId})` : ""
-          }`;
-          setMessage(text);
-          toast({ title: "Patient profile created", description: text, variant: "success" });
-        },
-        onError: (error: unknown) => {
-          const text = getErrorMessage(error, "Profile create failed");
-          setMessage(text);
-          toast({ title: "Patient profile failed", description: text, variant: "error" });
-        },
-      }
-    );
   };
 
-  const handleUpdateProfile = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (!profileId) {
-      const text = "Profile ID is required to update patient profile.";
-      setMessage(text);
-      toast({ title: "Patient update blocked", description: text, variant: "error" });
-      return;
-    }
-
-    setMessage("");
-
-    updateProfile(
-      {
-        profileId,
-        payload: buildUpdateProfilePayload(),
-      },
-      {
-        onSuccess: () => {
-          const text = `Patient profile updated successfully. profileId: ${profileId}`;
-          setMessage(text);
-          toast({ title: "Patient profile updated", description: text, variant: "success" });
-        },
-        onError: (error: unknown) => {
-          const text = getErrorMessage(error, "Profile update failed");
-          setMessage(text);
-          toast({ title: "Patient update failed", description: text, variant: "error" });
-        },
-      }
-    );
-  };
+  const rootError = (form.formState.errors as any)?.root?.message as
+    | string
+    | undefined;
 
   return (
-    <div className="w-full space-y-6 px-2 sm:px-4 lg:px-6 xl:px-8">
-      <div>
-        <h1 className="text-3xl font-bold">Add Patient</h1>
-        <p className="text-sm text-gray-400">
-          Step 1 me patient create hoga with hardcoded role patient, then same userId se profile create hogi.
+    <div className="w-full space-y-4 sm:space-y-6 px-2 sm:px-4 lg:px-6 xl:px-8">
+      <div className="flex flex-col gap-1">
+        <h1 className="text-2xl sm:text-3xl font-bold">Create Patient Profile</h1>
+        <p className="text-sm text-slate-300">
+          Select an existing patient user, then create profile via `POST /admin/createuserprofle`.
         </p>
       </div>
 
-      <Card className="p-6 space-y-4">
-        <h2 className="text-lg font-semibold">Step 1: Create Patient</h2>
-        <form onSubmit={handleCreateUser} className="grid gap-4 md:grid-cols-2">
-          <div className="space-y-2">
-            <Label>Name</Label>
-            <Input
-              value={userForm.name}
-              onChange={(event) => handleUserChange("name", event.target.value)}
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label>Email</Label>
-            <Input
-              type="email"
-              value={userForm.email}
-              onChange={(event) => handleUserChange("email", event.target.value)}
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label>Phone</Label>
-            <Input
-              value={userForm.phone}
-              onChange={(event) => handleUserChange("phone", event.target.value)}
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label>Password</Label>
-            <Input
-              type="password"
-              value={userForm.password}
-              onChange={(event) => handleUserChange("password", event.target.value)}
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label>DOB</Label>
-            <Input
-              type="date"
-              value={userForm.dob}
-              onChange={(event) => handleUserChange("dob", event.target.value)}
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label>Gender</Label>
-            <select
-              value={userForm.gender}
-              onChange={(event) => handleUserChange("gender", event.target.value)}
-              className="w-full rounded-md border border-input bg-card px-3 py-2 text-foreground"
-              required
-            >
-              <option value="male">male</option>
-              <option value="female">female</option>
-              <option value="other">other</option>
-            </select>
-          </div>
-          <div className="space-y-2">
-            <Label>Role</Label>
-            <Input value={userForm.role} readOnly />
-          </div>
-          <div className="space-y-2 md:col-span-2">
-            <Label>Profile Pic URL</Label>
-            <Input
-              value={userForm.profile_pic}
-              onChange={(event) =>
-                handleUserChange("profile_pic", event.target.value)
-              }
-              placeholder="Optional. Leave empty for random avatar."
-            />
-          </div>
-          <div className="space-y-2 md:col-span-2">
-            <Label>Aadhar</Label>
-            <Input
-              value={userForm.aadhar}
-              onChange={(event) => handleUserChange("aadhar", event.target.value)}
-              required
-            />
-          </div>
-          <div className="md:col-span-2 flex items-center gap-3">
-            <Button
-              type="submit"
-              disabled={isCreatingUser}
-              className="bg-blue-600 hover:bg-blue-700"
-            >
-              {isCreatingUser ? "Creating patient..." : "Create Patient"}
-            </Button>
-            <span className="text-sm text-gray-400">
-              userId: {userId ?? "Not created yet"}
-            </span>
-          </div>
-        </form>
+      <Card className="p-6">
+        <UserSearchSelect
+          label={`Patient User${usersLoading ? " (loading...)" : ""}`}
+          users={userOptions}
+          roleFilter="patient"
+          value={selectedUser}
+          onChange={(user) => {
+            setSelectedUser(user);
+            form.setValue("userId", user?.id || 0, { shouldValidate: true });
+          }}
+        />
+        {form.formState.errors.userId?.message && (
+          <p className="mt-2 text-xs text-rose-300">
+            {form.formState.errors.userId.message}
+          </p>
+        )}
       </Card>
 
-      <Card className="p-6 space-y-4">
-        <h2 className="text-lg font-semibold">Step 2: Create Patient Profile</h2>
-        <p className="text-sm text-gray-400">Uses `POST /admin/createuserprofle`.</p>
-        <form onSubmit={handleCreateProfile} className="grid gap-4 md:grid-cols-2">
-          <div className="space-y-2">
-            <Label>User ID</Label>
-            <Input
-              ref={profileUserIdRef}
-              value={userId ?? ""}
-              readOnly
-              placeholder="Created in step 1"
-            />
-          </div>
+      <Card className="p-6">
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="grid gap-4 md:grid-cols-2"
+        >
+          {rootError && (
+            <div className="md:col-span-2 rounded-xl border border-rose-500/20 bg-rose-500/10 px-3 py-2 text-sm text-rose-300">
+              {rootError}
+            </div>
+          )}
+
           <div className="space-y-2">
             <Label>Emergency Contact</Label>
             <Input
-              value={profileForm.emergency_contact}
-              onChange={(event) =>
-                handleProfileChange("emergency_contact", event.target.value)
-              }
-              required
+              className="h-11 rounded-xl border-white/10 bg-slate-900/60 text-slate-100 placeholder:text-slate-400"
+              {...form.register("emergency_contact")}
             />
+            {form.formState.errors.emergency_contact?.message && (
+              <p className="text-xs text-rose-300">
+                {form.formState.errors.emergency_contact.message}
+              </p>
+            )}
           </div>
+
           <div className="space-y-2">
             <Label>Preferred Language</Label>
             <Input
-              value={profileForm.preferred_language}
-              onChange={(event) =>
-                handleProfileChange("preferred_language", event.target.value)
-              }
-              required
+              className="h-11 rounded-xl border-white/10 bg-slate-900/60 text-slate-100 placeholder:text-slate-400"
+              {...form.register("preferred_language")}
             />
+            {form.formState.errors.preferred_language?.message && (
+              <p className="text-xs text-rose-300">
+                {form.formState.errors.preferred_language.message}
+              </p>
+            )}
           </div>
+
           <div className="space-y-2">
             <Label>Consultation Type</Label>
             <Input
-              value={profileForm.consultation_type}
-              onChange={(event) =>
-                handleProfileChange("consultation_type", event.target.value)
-              }
-              required
+              className="h-11 rounded-xl border-white/10 bg-slate-900/60 text-slate-100 placeholder:text-slate-400"
+              {...form.register("consultation_type")}
             />
+            {form.formState.errors.consultation_type?.message && (
+              <p className="text-xs text-rose-300">
+                {form.formState.errors.consultation_type.message}
+              </p>
+            )}
           </div>
+
           <div className="space-y-2">
             <Label>Blood Group</Label>
             <Input
-              value={profileForm.blood_group}
-              onChange={(event) => handleProfileChange("blood_group", event.target.value)}
-              required
+              className="h-11 rounded-xl border-white/10 bg-slate-900/60 text-slate-100 placeholder:text-slate-400"
+              {...form.register("blood_group")}
             />
+            {form.formState.errors.blood_group?.message && (
+              <p className="text-xs text-rose-300">
+                {form.formState.errors.blood_group.message}
+              </p>
+            )}
           </div>
-          <div className="space-y-2">
+
+          <div className="space-y-2 md:col-span-2">
             <Label>Allergies</Label>
             <Input
-              value={profileForm.allergies}
-              onChange={(event) => handleProfileChange("allergies", event.target.value)}
-              required
+              className="h-11 rounded-xl border-white/10 bg-slate-900/60 text-slate-100 placeholder:text-slate-400"
+              {...form.register("allergies")}
             />
+            {form.formState.errors.allergies?.message && (
+              <p className="text-xs text-rose-300">{form.formState.errors.allergies.message}</p>
+            )}
           </div>
-          <div className="space-y-2">
+
+          <div className="space-y-2 md:col-span-2">
             <Label>Existing Conditions</Label>
             <Input
-              value={profileForm.existing_conditions}
-              onChange={(event) =>
-                handleProfileChange("existing_conditions", event.target.value)
-              }
-              required
+              className="h-11 rounded-xl border-white/10 bg-slate-900/60 text-slate-100 placeholder:text-slate-400"
+              {...form.register("existing_conditions")}
             />
+            {form.formState.errors.existing_conditions?.message && (
+              <p className="text-xs text-rose-300">
+                {form.formState.errors.existing_conditions.message}
+              </p>
+            )}
           </div>
+
           <div className="space-y-2 md:col-span-2">
             <Label>Medications</Label>
             <Input
-              value={profileForm.medications}
-              onChange={(event) => handleProfileChange("medications", event.target.value)}
-              required
+              className="h-11 rounded-xl border-white/10 bg-slate-900/60 text-slate-100 placeholder:text-slate-400"
+              {...form.register("medications")}
             />
+            {form.formState.errors.medications?.message && (
+              <p className="text-xs text-rose-300">
+                {form.formState.errors.medications.message}
+              </p>
+            )}
           </div>
+
           <div className="space-y-2">
             <Label>Age</Label>
             <Input
               type="number"
-              value={profileForm.age}
-              onChange={(event) => handleProfileChange("age", event.target.value)}
-              required
+              className="h-11 rounded-xl border-white/10 bg-slate-900/60 text-slate-100"
+              {...form.register("age", { valueAsNumber: true })}
             />
+            {form.formState.errors.age?.message && (
+              <p className="text-xs text-rose-300">{form.formState.errors.age.message}</p>
+            )}
           </div>
+
           <div className="space-y-2">
             <Label>Height (cm)</Label>
             <Input
               type="number"
               step="0.1"
-              value={profileForm.height}
-              onChange={(event) => handleProfileChange("height", event.target.value)}
-              required
+              className="h-11 rounded-xl border-white/10 bg-slate-900/60 text-slate-100"
+              {...form.register("height", { valueAsNumber: true })}
             />
+            {form.formState.errors.height?.message && (
+              <p className="text-xs text-rose-300">{form.formState.errors.height.message}</p>
+            )}
           </div>
+
           <div className="space-y-2">
             <Label>Weight (kg)</Label>
             <Input
               type="number"
               step="0.1"
-              value={profileForm.weight}
-              onChange={(event) => handleProfileChange("weight", event.target.value)}
-              required
+              className="h-11 rounded-xl border-white/10 bg-slate-900/60 text-slate-100"
+              {...form.register("weight", { valueAsNumber: true })}
             />
+            {form.formState.errors.weight?.message && (
+              <p className="text-xs text-rose-300">{form.formState.errors.weight.message}</p>
+            )}
           </div>
+
           <div className="space-y-2">
             <Label>BMI</Label>
             <Input
               type="number"
               step="0.1"
-              value={profileForm.bmi}
-              onChange={(event) => handleProfileChange("bmi", event.target.value)}
-              required
+              className="h-11 rounded-xl border-white/10 bg-slate-900/60 text-slate-100"
+              {...form.register("bmi", { valueAsNumber: true })}
             />
+            {form.formState.errors.bmi?.message && (
+              <p className="text-xs text-rose-300">{form.formState.errors.bmi.message}</p>
+            )}
           </div>
+
           <div className="flex items-center gap-3">
             <input
               type="checkbox"
-              checked={profileForm.lifestyle_smoking}
-              onChange={(event) =>
-                handleProfileChange("lifestyle_smoking", event.target.checked)
-              }
+              className="cursor-pointer"
+              checked={form.watch("lifestyle_smoking")}
+              onChange={(e) => form.setValue("lifestyle_smoking", e.target.checked)}
             />
             <Label>Smoking</Label>
           </div>
+
           <div className="flex items-center gap-3">
             <input
               type="checkbox"
-              checked={profileForm.lifestyle_alcohol}
-              onChange={(event) =>
-                handleProfileChange("lifestyle_alcohol", event.target.checked)
-              }
+              className="cursor-pointer"
+              checked={form.watch("lifestyle_alcohol")}
+              onChange={(e) => form.setValue("lifestyle_alcohol", e.target.checked)}
             />
             <Label>Alcohol</Label>
           </div>
+
           <div className="space-y-2">
-            <Label>Insurence Provider</Label>
+            <Label>Insurance Provider</Label>
             <Input
-              value={profileForm.insurence_provider}
-              onChange={(event) =>
-                handleProfileChange("insurence_provider", event.target.value)
-              }
-              required
+              className="h-11 rounded-xl border-white/10 bg-slate-900/60 text-slate-100 placeholder:text-slate-400"
+              {...form.register("insurence_provider")}
             />
+            {form.formState.errors.insurence_provider?.message && (
+              <p className="text-xs text-rose-300">
+                {form.formState.errors.insurence_provider.message}
+              </p>
+            )}
           </div>
+
           <div className="space-y-2">
             <Label>Policy Number</Label>
             <Input
-              value={profileForm.policy_number}
-              onChange={(event) =>
-                handleProfileChange("policy_number", event.target.value)
-              }
-              required
+              className="h-11 rounded-xl border-white/10 bg-slate-900/60 text-slate-100 placeholder:text-slate-400"
+              {...form.register("policy_number")}
             />
+            {form.formState.errors.policy_number?.message && (
+              <p className="text-xs text-rose-300">
+                {form.formState.errors.policy_number.message}
+              </p>
+            )}
           </div>
+
           <div className="space-y-2 md:col-span-2">
             <Label>Payment Mode</Label>
             <Input
-              value={profileForm.payment_mode}
-              onChange={(event) =>
-                handleProfileChange("payment_mode", event.target.value)
-              }
-              required
+              className="h-11 rounded-xl border-white/10 bg-slate-900/60 text-slate-100 placeholder:text-slate-400"
+              {...form.register("payment_mode")}
             />
+            {form.formState.errors.payment_mode?.message && (
+              <p className="text-xs text-rose-300">
+                {form.formState.errors.payment_mode.message}
+              </p>
+            )}
           </div>
+
           <div className="md:col-span-2">
             <Button
               type="submit"
-              disabled={isCreatingProfile || !userId}
-              className="bg-green-600 hover:bg-green-700"
+              disabled={isPending}
+              className="h-11 w-full rounded-xl bg-cyan-600 text-white hover:bg-cyan-700"
             >
-              {isCreatingProfile ? "Creating profile..." : "Create Patient Profile"}
+              {isPending ? "Creating..." : "Create Patient Profile"}
             </Button>
           </div>
         </form>
       </Card>
-
-      <Card className="p-6 space-y-4">
-        <h2 className="text-lg font-semibold">Step 3: Update Patient Profile</h2>
-        <form onSubmit={handleUpdateProfile} className="grid gap-4 md:grid-cols-2">
-          <div className="space-y-2">
-            <Label>Profile ID</Label>
-            <Input
-              type="number"
-              value={profileId ?? ""}
-              onChange={(event) => setProfileId(Number(event.target.value))}
-              placeholder="Example: 2"
-              required
-            />
-          </div>
-          <div className="md:col-span-2">
-            <p className="text-sm text-gray-400">
-              Uses `PATCH /admin/updatepatientprofile/{profileId}`. Fields are
-              optional for update.
-            </p>
-          </div>
-          <div className="md:col-span-2">
-            <Button
-              type="submit"
-              disabled={isUpdatingProfile}
-              className="bg-amber-600 hover:bg-amber-700"
-            >
-              {isUpdatingProfile ? "Updating profile..." : "Update Patient Profile"}
-            </Button>
-          </div>
-        </form>
-      </Card>
-
-      {message && (
-        <Card className="p-4 text-sm">
-          <p>{message}</p>
-        </Card>
-      )}
     </div>
   );
 }

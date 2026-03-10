@@ -1,7 +1,6 @@
 import { Input } from "@/components/ui/input";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Bell } from "lucide-react";
-import ThemeToggle from "@/components/ui/theme-toggle";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -53,25 +52,22 @@ const DashboardNavbar = () => {
 
 
   return (
-    <nav className="fixed top-0 md:w-[80%] z-30 h-16 w-full px-4 border-b bg-white/80 dark:bg-neutral-950/90 backdrop-blur-md flex items-center justify-between">
+    <nav className="sticky top-0 z-30 h-16 w-full px-4 border-b border-white/10 bg-slate-950/45 backdrop-blur-md flex items-center justify-between">
       
       {/* LEFT SECTION */}
       <div   className="flex items-center gap-4">
         <SidebarTrigger className="flex md:hidden cursor-pointer" />
         <div className="w-84 hidden md:block">
-          <Input placeholder="Search..." className="rounded-xl" />
+          <Input placeholder="Search..." className="rounded-xl border-white/10 bg-slate-900/60 text-slate-100 placeholder:text-slate-400" />
         </div>
       </div>
 
       {/* RIGHT SECTION */}
       <div className="flex items-center  gap-6">
-        {/* Theme Toggle */}
-        <ThemeToggle />
-
         {/* Notification */}
         <DropdownMenu>
-          <DropdownMenuTrigger className="relative rounded-full p-2 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
-            <Bell className="w-5 h-5 text-slate-600" />
+          <DropdownMenuTrigger className="relative rounded-full p-2 hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/60">
+            <Bell className="w-5 h-5 text-slate-200" />
             {unreadCount > 0 && (
               <span className="absolute -top-0.5 -right-0.5 rounded-full bg-red-600 px-1.5 py-[2px] text-[10px] font-semibold text-white">
                 {unreadCount}
@@ -80,21 +76,21 @@ const DashboardNavbar = () => {
           </DropdownMenuTrigger>
           <DropdownMenuContent
             align="end"
-            className="w-80 p-0 shadow-xl ring-1 ring-black/5"
+            className="w-80 p-0 shadow-xl ring-1 ring-white/10 bg-slate-950/95 border border-white/10 text-slate-100"
           >
-            <div className="flex items-center justify-between border-b px-4 py-3">
+            <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
               <div>
-                <p className="text-sm font-semibold text-slate-900">
+                <p className="text-sm font-semibold text-slate-100">
                   Notifications
                 </p>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-slate-400">
                   {unreadCount} unread message{unreadCount === 1 ? "" : "s"}
                 </p>
               </div>
               <button
                 onClick={markAllRead}
                 disabled={!unreadCount}
-                className="text-xs font-medium text-indigo-600 hover:text-indigo-500 disabled:cursor-not-allowed disabled:text-slate-400"
+                className="text-xs font-medium text-cyan-300 hover:text-cyan-200 disabled:cursor-not-allowed disabled:text-slate-500"
               >
                 Mark all read
               </button>
@@ -106,7 +102,7 @@ const DashboardNavbar = () => {
                 onItemClick={handleItemClick}
               />
             </div>
-            <div className="border-t px-4 py-2 text-center text-sm text-indigo-600 hover:text-indigo-500">
+            <div className="border-t border-white/10 px-4 py-2 text-center text-sm text-cyan-300 hover:text-cyan-200">
               View all notifications
             </div>
           </DropdownMenuContent>
@@ -123,7 +119,7 @@ const DashboardNavbar = () => {
             <span className="font-medium hidden md:block">Dishant</span>
           </DropdownMenuTrigger>
 
-          <DropdownMenuContent className="w-48" align="end">
+          <DropdownMenuContent className="w-48 bg-slate-950/95 border border-white/10 text-slate-100" align="end">
             <DropdownMenuLabel>My Account</DropdownMenuLabel>
             <DropdownMenuSeparator />
 

@@ -31,7 +31,7 @@ const Admin = () => {
     <div className="w-full  flex-1">
       <div className="p-2">
           <h1 className="text-3xl font-semibold">Dashboard</h1>
-          <p className="text-gray-500">Welcome back, Dr. Johnson! Here's what's happening today.</p>
+          <p className="text-slate-300">Welcome back, Dr. Johnson! Here's what's happening today.</p>
     </div>  
     <div className="md:flex  w-full">
         <div className="w-full">
@@ -41,7 +41,7 @@ const Admin = () => {
               return (
                 <Card key={index} className="p-8 w-full md:mb-0 md:mr-4">
                   <span className={`${card.color}`}>{user}</span>
-                  <p className="text-lg font-medium text-gray-600 mt-2">
+                  <p className="text-lg font-medium text-slate-300 mt-2">
                     {card.title}
                   </p>
                   <div className="flex items-baseline justify-between">
@@ -53,7 +53,7 @@ const Admin = () => {
             })}
           </div>
 
- <div className="flex items-center gap-4 mt-4 mb-5 bg-gray-200 dark:bg-gray-900 p-2 shadow rounded-xl w-max">
+ <div className="flex items-center gap-4 mt-4 mb-5 bg-white/5 p-2 shadow rounded-xl w-max border border-white/10">
         {tabs.map((tab) => (
           <button
             key={tab.id}
@@ -61,8 +61,8 @@ const Admin = () => {
             className={`
               px-2 md:px-5 py-2 rounded-lg text-sm cursor-pointer font-medium transition-all duration-300
               ${activeTab === tab.id
-                ? "dark:bg-black bg-white   shadow-md scale-105"
-                : "text-gray-700 dark:text-gray-400 dark:hover:bg-gray-800 hover:bg-gray-100"
+                ? "bg-slate-950/80 border border-white/10 shadow-md scale-105"
+                : "text-slate-300 hover:bg-white/5"
               }
             `}
           >

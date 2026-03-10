@@ -135,7 +135,7 @@ export function LoginForm({
   return (
     <div
       className={cn(
-        "relative min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(14,165,233,0.18),_transparent_28%),radial-gradient(circle_at_80%_20%,_rgba(16,185,129,0.16),_transparent_24%),linear-gradient(145deg,#020817_0%,#0f172a_40%,#10243a_100%)] px-4 py-8 text-white md:px-8 md:py-10",
+        "relative flex min-h-screen items-center justify-center overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(14,165,233,0.18),_transparent_28%),radial-gradient(circle_at_80%_20%,_rgba(16,185,129,0.16),_transparent_24%),linear-gradient(145deg,#020817_0%,#0f172a_40%,#10243a_100%)] px-4 py-8 text-white md:px-8 md:py-10",
         className
       )}
       {...props}
@@ -143,7 +143,7 @@ export function LoginForm({
       <div className="absolute left-6 top-10 h-36 w-36 rounded-full bg-cyan-400/15 blur-3xl" />
       <div className="absolute bottom-0 right-0 h-56 w-56 rounded-full bg-emerald-400/15 blur-3xl" />
 
-      <div className="relative mx-auto grid w-full max-w-6xl gap-6 lg:grid-cols-[1.15fr_0.85fr]">
+      <div className="relative mx-auto grid w-full max-w-6xl items-center gap-6 lg:grid-cols-[1.15fr_0.85fr]">
         <div className="hidden overflow-hidden rounded-[2rem] border border-white/10 bg-slate-950/85 p-8 text-white shadow-2xl lg:block">
           <div className="flex items-center gap-3">
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-cyan-400/15 ring-1 ring-cyan-300/20">

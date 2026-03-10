@@ -20,18 +20,33 @@ import {
 
 import { NavLink } from "react-router-dom"
 
+const navLinkClassName = ({ isActive }: { isActive: boolean }) =>
+  isActive
+    ? "bg-white/10 text-sm text-white flex items-center gap-3 rounded-lg px-4 py-2"
+    : "flex text-sm items-center gap-3 rounded-lg px-4 py-2 text-slate-200 hover:bg-white/5"
+
+const subNavLinkClassName = ({ isActive }: { isActive: boolean }) =>
+  isActive
+    ? "bg-white/10 text-sm text-white flex items-center gap-3 rounded-lg px-4 py-2"
+    : "flex text-sm items-center gap-3 rounded-lg px-4 py-2 text-slate-200 hover:bg-white/5"
+
 export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
   const [openDoctors, setOpenDoctors] = React.useState(false)
+  const [openPatients, setOpenPatients] = React.useState(false)
+  const [openPlans, setOpenPlans] = React.useState(false)
   const [openAppointments, setOpenAppointments] = React.useState(false)
 
   return (
-    <Sidebar {...props} className="bg-white shadow-sm border-none">
-      <SidebarHeader className="p-4 ">
+    <Sidebar
+      {...props}
+      className="bg-slate-950/45 text-slate-100 shadow-sm border-none"
+    >
+      <SidebarHeader className="p-4 border-b border-white/10 bg-white/5">
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
               <a href="#" className="flex items-center gap-3">
-                <div className="bg-blue-600 text-white flex aspect-square size-10 items-center justify-center rounded-xl font-bold text-xl shadow-md">
+                <div className="bg-card border border-white/10 text-cyan-200 flex aspect-square size-10 items-center justify-center rounded-xl font-bold text-xl shadow-sm">
                   A
                 </div>
                 <div className="flex flex-col leading-tight">
@@ -44,7 +59,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
 
-      <SidebarContent className="py-4  dark:bg-neutral-950">
+      <SidebarContent className="py-4">
         <SidebarGroup>
           <SidebarMenu>
 
@@ -52,37 +67,51 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
             <SidebarMenuItem>
               <NavLink
                 to="/"
-                className={({ isActive }) =>
-                  isActive
-                    ? "dark:bg-gray-800 text-sm bg-gray-200 flex items-center gap-3 rounded-lg px-4 py-2"
-                    : "flex text-sm items-center gap-3 rounded-lg px-4 py-2 dark:hover:bg-gray-800"
-                }
+                className={navLinkClassName}
               >
                 <LayoutDashboard className="h-5 w-5" />
                 Dashboard
               </NavLink>
             </SidebarMenuItem>
 
-            {/* -------- Plans -------- */}
+            {/* -------- Plan Management Dropdown -------- */}
             <SidebarMenuItem>
-              <NavLink
-                to="/admin/plans"
-                className={({ isActive }) =>
-                  isActive
-                    ? "dark:bg-gray-800 text-sm bg-gray-200 flex items-center gap-3 rounded-lg px-4 py-2"
-                    : "flex text-sm items-center gap-3 rounded-lg px-4 py-2 dark:hover:bg-gray-800"
-                }
+              <button
+                onClick={() => setOpenPlans(!openPlans)}
+                className="flex w-full items-center justify-between px-4 py-2 rounded-lg hover:bg-white/5 cursor-pointer"
               >
-                <CalendarDays className="h-5 w-5" />
-                All Plans
-              </NavLink>
+                <div className="flex items-center gap-3">
+                  <CalendarDays className="h-5 w-5" />
+                  <span className=" text-sm">Plan Management</span>
+                </div>
+                <ChevronDown
+                  className={`h-4 w-4 transition-transform duration-300 ease-in-out ${
+                    openPlans ? "rotate-180" : ""
+                  }`}
+                />
+              </button>
+
+              <div
+                className={`ml-8 overflow-hidden transition-all duration-300 ease-in-out ${
+                  openPlans ? "max-h-28 opacity-100 mt-2" : "max-h-0 opacity-0"
+                }`}
+              >
+                <div className="flex flex-col gap-2 py-1">
+                  <NavLink to="/admin/plans" className={subNavLinkClassName}>
+                    All Plans
+                  </NavLink>
+                  <NavLink to="/admin/plans/create" className={subNavLinkClassName}>
+                    Create Plan
+                  </NavLink>
+                </div>
+              </div>
             </SidebarMenuItem>
 
             {/* -------- Doctors Dropdown -------- */}
             <SidebarMenuItem>
               <button
                 onClick={() => setOpenDoctors(!openDoctors)}
-                className="flex w-full items-center justify-between px-4 py-2 rounded-lg dark:hover:bg-gray-800 hover:bg-gray-200 cursor-pointer"
+                className="flex w-full items-center justify-between px-4 py-2 rounded-lg hover:bg-white/5 cursor-pointer"
               >
                 <div className="flex items-center gap-3">
                   <Stethoscope className="h-5 w-5" />
@@ -101,56 +130,57 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
                 }`}
               >
                 <div className="flex flex-col gap-2 py-1">
-                  <NavLink to="/admin/doctors/doctor-list" className={({ isActive }) =>
-                  isActive
-                    ? "dark:bg-gray-800 text-sm flex bg-gray-200 items-center gap-3 rounded-lg px-4 py-2"
-                    : "flex text-sm hover:bg-gray-200 items-centertext-white gap-3 rounded-lg px-4 py-2   dark:bg-black   dark:hover:bg-gray-800"
-                }>
+                  <NavLink to="/admin/doctors/doctor-list" className={subNavLinkClassName}>
                     Doctors List
                   </NavLink>
-                  <NavLink to="/admin/doctors/add-doctor" className={({ isActive }) =>
-                  isActive
-                    ? "dark:bg-gray-800 text-sm flex bg-gray-200 items-center gap-3 rounded-lg px-4 py-2"
-                    : "flex items-centertext-white gap-3 rounded-lg px-4 py-2 dark:hover:bg-gray-800 text-sm hover:bg-gray-200"
-                }>
+                  <NavLink to="/admin/doctors/add-doctor" className={subNavLinkClassName}>
                     Add Doctor
                   </NavLink>
-                  <NavLink to="/admin/doctors/kyc-verification" className={({ isActive }) =>
-                  isActive
-                    ? "dark:bg-gray-800  text-sm flex text-white items-center gap-3 rounded-lg px-4 py-2"
-                    : "flex text-sm items-centertext-white gap-3 rounded-lg px-4 py-2 dark:hover:bg-gray-800  hover:bg-gray-200"
-                }>
+                  <NavLink to="/admin/doctors/kyc-verification" className={subNavLinkClassName}>
                     KYC Verification
                   </NavLink>
                 </div>
               </div>
             </SidebarMenuItem>
 
-            {/* -------- Patients -------- */}
+            {/* -------- Patients Dropdown -------- */}
             <SidebarMenuItem>
-              <NavLink
-                to="/admin/patients"
-                className={({ isActive }) =>
-                  isActive
-                    ? "dark:bg-gray-800 flex text-white items-center gap-3 rounded-lg px-4 py-2"
-                    : "flex items-centertext-white gap-3 rounded-lg px-4 py-2 dark:hover:bg-gray-800 text-sm hover:bg-gray-200"
-                }
+              <button
+                onClick={() => setOpenPatients(!openPatients)}
+                className="flex w-full items-center justify-between px-4 py-2 rounded-lg hover:bg-white/5 cursor-pointer"
               >
-                <Users className="h-5 w-5" />
-                Patients
-              </NavLink>
+                <div className="flex items-center gap-3">
+                  <Users className="h-5 w-5" />
+                  <span className=" text-sm">Patients</span>
+                </div>
+                <ChevronDown
+                  className={`h-4 w-4 transition-transform duration-300 ease-in-out ${
+                    openPatients ? "rotate-180" : ""
+                  }`}
+                />
+              </button>
+
+              <div
+                className={`ml-8 overflow-hidden transition-all duration-300 ease-in-out ${
+                  openPatients ? "max-h-28 opacity-100 mt-2" : "max-h-0 opacity-0"
+                }`}
+              >
+                <div className="flex flex-col gap-2 py-1">
+                  <NavLink to="/admin/patients" className={subNavLinkClassName}>
+                    Patients List
+                  </NavLink>
+                  <NavLink to="/admin/patients/add-patient" className={subNavLinkClassName}>
+                    Add Patient
+                  </NavLink>
+                </div>
+              </div>
             </SidebarMenuItem>
+
+            {/* -------- User Management -------- */}
             <SidebarMenuItem>
-              <NavLink
-                to="/admin/patients/add-patient"
-                className={({ isActive }) =>
-                  isActive
-                    ? "dark:bg-gray-800 flex text-white items-center gap-3 rounded-lg px-4 py-2"
-                    : "flex items-centertext-white gap-3 rounded-lg px-4 py-2 dark:hover:bg-gray-800 text-sm hover:bg-gray-200"
-                }
-              >
+              <NavLink to="/admin/user-management" className={navLinkClassName}>
                 <Users className="h-5 w-5" />
-                Add Patient
+                User Management
               </NavLink>
             </SidebarMenuItem>
 
@@ -158,7 +188,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
             <SidebarMenuItem>
               <button
                 onClick={() => setOpenAppointments(!openAppointments)}
-                className="flex w-full items-center justify-between px-4 py-2 rounded-lg dark:hover:bg-gray-800 hover:bg-gray-200 cursor-pointer"
+                className="flex w-full items-center justify-between px-4 py-2 rounded-lg hover:bg-white/5 cursor-pointer"
               >
                 <div className="flex items-center gap-3">
                   <CalendarDays className="h-5 w-5" />
@@ -177,18 +207,10 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
                 }`}
               >
                 <div className="flex flex-col gap-2   py-1">
-                  <NavLink to="/admin/appointments/all"  className={({ isActive }) =>
-                  isActive
-                    ? "dark:bg-gray-800 bg-gray-200 text-sm flex  items-center gap-3 rounded-lg px-4 py-2"
-                    : "flex items-centertext-white text-sm gap-3 rounded-lg px-4 py-2 dark:hover:bg-gray-800 hover:bg-gray-200"
-                }>
+                  <NavLink to="/admin/appointments/all" className={subNavLinkClassName}>
                     All Appointments
                   </NavLink>
-                  <NavLink to="/admin/appointments/add" className={({ isActive }) =>
-                  isActive
-                    ? "dark:bg-gray-800 bg-gray-200 text-sm flex  items-center gap-3 rounded-lg px-4 py-2"
-                    : "flex items-centertext-white text-sm gap-3 rounded-lg px-4 py-2 dark:hover:bg-gray-800 hover:bg-gray-200"
-                }>
+                  <NavLink to="/admin/appointments/add" className={subNavLinkClassName}>
                     Add Appointment
                   </NavLink>
                 </div>

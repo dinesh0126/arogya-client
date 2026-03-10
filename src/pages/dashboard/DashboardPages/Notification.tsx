@@ -66,7 +66,7 @@ export const NotificationList = ({
   onItemClick,
 }: NotificationListProps) => {
   const scrollStyles =
-    "overflow-y-auto [scrollbar-width:none] [&::-webkit-scro llbar]:hidden";
+    "overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden";
   const containerStyles = compact
     ? `max-h-80 space-y-3 ${scrollStyles} pr-1`
     : `space-y-4 max-h-[400px] ${scrollStyles} pr-2`;
@@ -85,15 +85,15 @@ export const NotificationList = ({
               onItemClick?.(item);
             }
           }}
-          className={`flex items-start gap-3 rounded-lg border p-4 text-left transition hover:border-blue-200 hover:bg-blue-50/80 focus:outline-none focus:ring-2 focus:ring-blue-200 ${
-            item.read ? "bg-gray-100 dark:bg-neutral-950" : "bg-blue-50 dark:bg-gray-800"
-          }`}
+          className={`flex items-start gap-3 rounded-xl border border-white/10 p-4 text-left transition focus:outline-none focus:ring-2 focus:ring-cyan-400/30 hover:bg-white/5 ${
+            item.read ? "bg-white/5" : "bg-cyan-500/10"
+          } ${onItemClick ? "cursor-pointer" : ""}`}
         >
           <div className="mt-1">{iconForType[item.type]}</div>
 
           <div className="w-full">
             <div className="flex items-center justify-between gap-2">
-              <h3 className="font-medium text-sm text-slate-900">
+              <h3 className="font-medium text-sm text-slate-100">
                 {item.title}
               </h3>
 
@@ -105,9 +105,9 @@ export const NotificationList = ({
               </Badge>
             </div>
 
-            <p className="text-xs text-gray-600 mt-1">{item.message}</p>
+            <p className="text-xs text-slate-300 mt-1">{item.message}</p>
 
-            <span className="text-[11px] text-gray-500 mt-2 block">
+            <span className="text-[11px] text-slate-400 mt-2 block">
               {item.time}
             </span>
           </div>
@@ -133,13 +133,13 @@ const Notification = () => {
   };
 
   return (
-    <Card className="w-full">
+    <Card className="w-full border-white/10 bg-white/5">
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
           <CardTitle className="flex items-center gap-2 text-2xl font-semibold">
-            <Bell className="h-6 w-6 text-blue-600" /> Notifications
+            <Bell className="h-6 w-6 text-cyan-300" /> Notifications
           </CardTitle>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-slate-300">
             Stay updated with the latest alerts
           </p>
         </div>
@@ -149,6 +149,7 @@ const Notification = () => {
           variant="outline"
           onClick={markAllRead}
           disabled={!unreadCount}
+          className="cursor-pointer"
         >
           Mark all read
         </Button>
