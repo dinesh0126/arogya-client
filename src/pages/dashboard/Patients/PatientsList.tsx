@@ -310,7 +310,7 @@ export default function PatientsList() {
 
       <RecordsOverview
         title="Patient directory"
-        description="Fetched from /admin/getpatientprofile with paginated view."
+        description=""
         items={patients}
         getRowId={(patient) => `${patient.profileId}-${patient.id}`}
         columns={patientColumns}

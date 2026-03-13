@@ -216,7 +216,7 @@ export default function DoctorKycVerification() {
 
       <RecordsOverview
         title="Pending KYC Requests"
-        description="Endpoint: /admin/doctor/pending"
+        description=""
         items={doctors}
         getRowId={(doctor) => String(doctor.id)}
         columns={columns}
