@@ -13,7 +13,7 @@ const Admin = () => {
   const { data, isLoading } = useDashboard();
     const [activeTab, setActiveTab] = useState("overview");
   const cardData = [
-    { title: "Total Users", icon: <Users />, value: data?.users.total, change: "+5.4%",color:"text-green-500" ,symbol:"$"},
+    { title: "Total Users", icon: <Users />, value: data?.users.total, change: "+5.4%",color:"text-green-500" ,symbol:""},
     { title: "Appointments", icon: <Box />, value: data?.appointments.total || 0, change: "+2.1%",color:"text-blue-500" ,symbol:"+"},
     { title: "Patients", icon: <Pill />, value: data?.users.patients || 0, change: "+2.1%" ,color:"text-purple-500" ,symbol:"+"},
     { title: "Doctors", icon: <Hospital />, value: data?.users.doctors || 0, change: "+2.1%"  ,color:"text-red-500", symbol:"+"},

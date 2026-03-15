@@ -31,6 +31,15 @@ export interface AppointmentRecord {
   status: string;
 }
 
+export interface CancelAppointmentPayload {
+  user_id: number;
+}
+
+export interface RescheduleAppointmentPayload {
+  date: string;
+  time_slot: string;
+}
+
 export interface AppointmentPagination {
   page: number;
   limit: number;

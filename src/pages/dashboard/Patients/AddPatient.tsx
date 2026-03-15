@@ -173,9 +173,7 @@ export default function AddPatient() {
     <div className="w-full space-y-4 sm:space-y-6 px-2 sm:px-4 lg:px-6 xl:px-8">
       <div className="flex flex-col gap-1">
         <h1 className="text-2xl sm:text-3xl font-bold">Create Patient Profile</h1>
-        <p className="text-sm text-slate-300">
-          Select an existing patient user, then create profile via `POST /admin/createuserprofle`.
-        </p>
+       
       </div>
 
       <Card className="p-6">

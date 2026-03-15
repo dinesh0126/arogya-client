@@ -146,9 +146,7 @@ export default function UserManagement() {
     <div className="w-full space-y-4 sm:space-y-6 px-2 sm:px-4 lg:px-6 xl:px-8">
       <div className="flex flex-col gap-1">
         <h1 className="text-2xl sm:text-3xl font-bold">User Management</h1>
-        <p className="text-sm text-slate-300">
-          Create Doctor or Patient users via `POST /admin/createuser`.
-        </p>
+        
       </div>
 
       <Card className="p-6">

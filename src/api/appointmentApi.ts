@@ -4,6 +4,8 @@ import type {
   AppointmentPagination,
   AppointmentRecord,
   CreateAppointmentPayload,
+  CancelAppointmentPayload,
+  RescheduleAppointmentPayload,
 } from "@/types/appointment";
 
 type UnknownRecord = Record<string, unknown>;
@@ -214,4 +216,23 @@ export const fetchAllAppointmentsApi = async ({
     pagination,
     raw: responseData,
   };
+};
+
+export const cancelAppointmentApi = async (
+  appointmentId: string | number,
+  payload: CancelAppointmentPayload
+) => {
+  const res = await api.patch(`/appointment/${appointmentId}/cancel`, payload);
+  return res.data;
+};
+
+export const rescheduleAppointmentApi = async (
+  appointmentId: string | number,
+  payload: RescheduleAppointmentPayload
+) => {
+  const res = await api.put(
+    `/appointment/${appointmentId}/reschedule`,
+    payload
+  );
+  return res.data;
 };
