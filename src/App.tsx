@@ -16,18 +16,31 @@ import NotFound from "./components/NotFound";
 import CreatePlan from "./pages/dashboard/plan/CreatePlan";
 import AllPlans from "./pages/dashboard/plan/AllPlans";
 import UserManagement from "./pages/dashboard/UserManagement/UserManagement";
+import HospitalLayout from "./pages/HospitalLayout";
+import HomePage from "./pages/HomePage";
+import ServicesPage from "./pages/ServicesPage";
+import RatingsPage from "./pages/RatingsPage";
+import AboutPage from "./pages/AboutPage";
 
 function App() {
   return (
     <>
       <Routes>
+        {/*Public hospital pages */}
+        <Route path="/" element={<HospitalLayout />}>
+          <Route index element={<HomePage />} />
+          <Route path="services" element={<ServicesPage />} />
+          <Route path="ratings" element={<RatingsPage />} />
+          <Route path="about" element={<AboutPage />} />
+        </Route>
+
         {/*Auth Routes */}
         <Route path="/login" element={<LoginForm />} />
         <Route path="/forgot-password" element={<Signup />} />
 
         {/* dashboard Routes */}
         <Route
-          path="/"
+          path="/admin"
           element={
             <ProtectedAuth>
               <DashboardLayout />
@@ -35,17 +48,17 @@ function App() {
           }
         >
           <Route index element={<Admin />} />
-          <Route path="/admin/appointments/all" element={<AllAppointments />} />
-          <Route path="/admin/plans" element={<AllPlans />} />
-          <Route path="/admin/plans/create" element={<CreatePlan />} />
-          <Route path="/admin/appointments/add" element={<AddAppointment />} />
-          <Route path="/admin/patients" element={<PatientsList />} />
-          <Route path="/admin/patients/add-patient" element={<AddPatient />} />
-          <Route path="/admin/doctors/doctor-list" element={<DoctorsList />} />
-          <Route path="/admin/doctors/add-doctor" element={<AddDoctor />} />
-          <Route path="/admin/user-management" element={<UserManagement />} />
+          <Route path="appointments/all" element={<AllAppointments />} />
+          <Route path="plans" element={<AllPlans />} />
+          <Route path="plans/create" element={<CreatePlan />} />
+          <Route path="appointments/add" element={<AddAppointment />} />
+          <Route path="patients" element={<PatientsList />} />
+          <Route path="patients/add-patient" element={<AddPatient />} />
+          <Route path="doctors/doctor-list" element={<DoctorsList />} />
+          <Route path="doctors/add-doctor" element={<AddDoctor />} />
+          <Route path="user-management" element={<UserManagement />} />
           <Route
-            path="/admin/doctors/kyc-verification"
+            path="doctors/kyc-verification"
             element={<DoctorKycVerification />}
           />
         </Route>

@@ -114,7 +114,7 @@ export function LoginForm({
             description: "Admin session started successfully.",
             variant: "success",
           });
-          navigate("/", { replace: true });
+          navigate("/admin", { replace: true });
         },
         onError: (err: any) => {
           const text = getErrorMessage(err, "Invalid email or password");
@@ -128,7 +128,7 @@ export function LoginForm({
   useEffect(() => {
     const auth = JSON.parse(localStorage.getItem("auth") || "{}");
     if (auth?.isAuth && auth?.token) {
-      navigate("/", { replace: true });
+      navigate("/admin", { replace: true });
     }
   }, [navigate]);
 
